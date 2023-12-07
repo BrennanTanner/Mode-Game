@@ -27,6 +27,10 @@ create.player = (scene) => {
    scene.player = new Player(scene);
 };
 
+create.gamer = (scene, x, y) => {
+   scene.gamers.add(new Player(scene, x, y));
+};
+
 create.animations = (scene) => {
    //define player animations
 
@@ -170,6 +174,144 @@ create.animations = (scene) => {
       key: 'shoot-rear',
       frames: scene.anims.generateFrameNumbers('player', { frames: [24, 25] }),
       frameRate: 5,
+   });
+
+   // Define gamer animation
+   // front
+   scene.anims.create({
+      key: 'gamer-walk-front',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [0, 1, 0, 2],
+      }),
+      frameRate: 5,
+   });
+   scene.anims.create({
+      key: 'gamer-walk-down',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [6, 7, 6, 8],
+      }),
+      frameRate: 5,
+   });
+   scene.anims.create({
+      key: 'gamer-run-front',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [12, 13, 12, 14],
+      }),
+      frameRate: 5,
+   });
+   scene.anims.create({
+      key: 'gamer-run-down',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [18, 19, 18, 20],
+      }),
+      frameRate: 5,
+   });
+   // rear
+   scene.anims.create({
+      key: 'gamer-walk-rear',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [3, 4, 3, 5],
+      }),
+      frameRate: 5,
+   });
+   scene.anims.create({
+      key: 'gamer-walk-up',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [9, 10, 9, 11],
+      }),
+      frameRate: 5,
+   });
+   scene.anims.create({
+      key: 'gamer-run-rear',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [15, 16, 15, 17],
+      }),
+      frameRate: 5,
+   });
+   scene.anims.create({
+      key: 'gamer-run-up',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [21, 22, 21, 23],
+      }),
+      frameRate: 5,
+   });
+
+   //hit
+   scene.anims.create({
+      key: 'gamer-hit-front-up',
+      frames: scene.anims.generateFrameNumbers('gamer', { frames: [24] }),
+   });
+   scene.anims.create({
+      key: 'gamer-hit-front-down',
+      frames: scene.anims.generateFrameNumbers('gamer', { frames: [25] }),
+   });
+   scene.anims.create({
+      key: 'gamer-hit-rear-up',
+      frames: scene.anims.generateFrameNumbers('gamer', { frames: [29] }),
+   });
+   scene.anims.create({
+      key: 'gamer-hit-rear-down',
+      frames: scene.anims.generateFrameNumbers('gamer', { frames: [28] }),
+   });
+   //fall
+   scene.anims.create({
+      key: 'gamer-down-front',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [25],
+      }),
+      frameRate: 0,
+   });
+
+   scene.anims.create({
+      key: 'gamer-up-front',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [24],
+      }),
+      frameRate: 0,
+   });
+   scene.anims.create({
+      key: 'gamer-down-rear',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [28],
+      }),
+      frameRate: 0,
+   });
+
+   scene.anims.create({
+      key: 'gamer-up-rear',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [29],
+      }),
+      frameRate: 0,
+   });
+
+   //idle
+   scene.anims.create({
+      key: 'gamer-idle-front',
+      frames: scene.anims.generateFrameNumbers('gamer', { frames: [0] }),
+   });
+      //idle
+      scene.anims.create({
+         key: 'gamer-idle-rear',
+         frames: scene.anims.generateFrameNumbers('gamer', { frames: [3] }),
+      });
+
+   //flip
+   scene.anims.create({
+      key: 'gamer-flip',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [24, 25, 26, 27],
+      }),
+      frameRate: 5,
+   });
+
+   //hit
+   scene.anims.create({
+      key: 'hit-swipe',
+      frames: scene.anims.generateFrameNumbers('hit', {
+         frames: [0, 1, 2, 3, 4],
+      }),
+      frameRate: 10,
    });
 };
 

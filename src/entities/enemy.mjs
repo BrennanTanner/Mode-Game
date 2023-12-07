@@ -1,0 +1,180 @@
+class Gamer extends Phaser.GameObjects.Sprite {
+   constructor(scene, x, y) {
+      super(scene, x, y);
+
+      this.scene = scene;
+      //modes
+      this.invincible = false;
+      this.cooldown = false;
+      this.cooldownTime = 1000;
+      this.agroTime = 1000;
+      this.agro = false;
+      this.moveMethod = 'walk';
+      this.speed = 50;
+
+      this.shadow = scene.add.isoSprite(x, y, 1, 'gamer');
+      this.body = scene.add.isoSprite(x, y, 1, 'gamer', scene.gamers);
+
+      this.shadow
+         .setTintFill(0x000000)
+         .setSize(15, 35)
+         .setScale(2)
+         .setOrigin(0.5, 1)
+         .setAlpha(0.6)
+         .setAngle(-65);
+      this.shadow.scaleY = 1;
+      this.shadow.preFX.addBlur(1, 1, 1, 1, 0x000000);
+
+      this.body.setSize(30, 60);
+      this.body.setScale(2).setOrigin(0.5, 1);
+
+      //this.body.anims.timeScale = 0.5
+      scene.isoPhysics.world.enable(this.body);
+      this.body.body.collideWorldBounds = true;
+      this.body.body.bounce.set(1, 1, 0.2);
+      this.body.anims.play('gamer-idle-front', true);
+   }
+
+   update() {
+      const distanceToPlayer = this.scene.isoPhysics.distanceBetween(
+         this.body,
+         this.scene.player.body
+      );
+      if (distanceToPlayer <= 300 && !this.cooldown) {
+         this.pathFinding();
+      }
+      if (distanceToPlayer <= 200) {
+         this.moveMethod = 'run';
+         this.speed = 130;
+      }else{
+         this.moveMethod = 'walk';
+         this.speed = 90; 
+      }
+
+      if (distanceToPlayer <= 30 && !this.cooldown) {
+         this.hitPlayer();
+      }
+
+      this.animations();
+
+      this.shadow.isoX = this.body.isoX - 5;
+      this.shadow.isoY = this.body.isoY - 5;
+      this.shadow.isoZ = 0;
+      this.shadow.setScale(
+         (1000 - Math.sqrt(this.body.isoZ * this.body.isoZ)) * 0.001
+      );
+   }
+
+   animations() {
+      const vel = this.body.body.velocity;
+      const angle = Phaser.Math.RadToDeg(this.body.body.angle);
+      //this.shadow.anims.play(this.body.anims.currentAnim.key, true);
+
+      if (angle > 45 || angle < -135) {
+         this.body.setFlipX(true);
+      } else if (angle <= 45 && angle >= -135) {
+         this.body.setFlipX(false);
+      }
+      //idle
+      if (
+         Math.sqrt(vel.x * vel.x) < 1 &&
+         Math.sqrt(vel.y * vel.y) < 1 &&
+         vel.z < 10 &&
+         vel.z > -10
+      ) {
+         this.body.anims.play(`gamer-idle-${this.facing}`, true);
+      }
+      //down-left or down-right
+      else if (
+         (angle <= 135 && angle > 67.5) ||
+         (angle < 22.5 && angle >= 0) ||
+         (angle >= -45 && angle < 0)
+      ) {
+         if (vel.z > 10) {
+            this.facing = 'front';
+            this.body.anims.play('gamer-up-front', true);
+         } else if (vel.z < -10) {
+            this.facing = 'front';
+            this.body.anims.play('gamer-down-front', true);
+         } else {
+            this.facing = 'front';
+            this.body.anims.play(`gamer-${this.moveMethod}-front`, true);
+         }
+      }
+      //up-left or up-right
+      else if (
+         angle < -157.5 ||
+         angle > 135 ||
+         (angle > -112.5 && angle < -45)
+      ) {
+         if (vel.z > 10) {
+            this.facing = 'rear';
+            this.body.anims.play('gamer-up-rear', true);
+         } else if (vel.z < -10) {
+            this.facing = 'rear';
+            this.body.anims.play('gamer-down-rear', true);
+         } else {
+            this.facing = 'rear';
+            this.body.anims.play(`gamer-${this.moveMethod}-rear`, true);
+         }
+      }
+      //up
+      else if (angle < -112.5 && angle > -157.5) {
+         if (vel.z > 10) {
+            this.facing = 'rear';
+            this.body.anims.play('gamer-up-rear', true);
+         } else if (vel.z < -10) {
+            this.facing = 'rear';
+            this.body.anims.play('gamer-down-rear', true);
+         } else {
+            this.facing = 'rear';
+            this.body.anims.play(`gamer-${this.moveMethod}-up`, true);
+         }
+      }
+      //down
+      else if (angle < 67.5 && angle > 22.5) {
+         if (vel.z > 10) {
+            this.facing = 'front';
+            this.body.anims.play('gamer-up-front', true);
+         } else if (vel.z < -10) {
+            this.facing = 'front';
+            this.body.anims.play('gamer-down-front', true);
+         } else {
+            this.facing = 'front';
+            this.body.anims.play(`gamer-${this.moveMethod}-down`, true);
+         }
+      }
+   }
+
+   pathFinding() {
+      this.scene.isoPhysics.moveToObjectXY(
+         this.body,
+         this.scene.player.body,
+         this.speed
+      );
+      if (this.body.isoZ < 1) {
+         this.body.body.velocity.z = 0;
+      } else {
+         this.body.body.velocity.z = -150;
+      }
+   }
+   hitPlayer() {
+      this.cooldown = true;
+      this.scene.hits.create(
+         this.body.isoX,
+         this.body.isoY,
+         this.body.isoZ,
+         this.facing
+      );
+
+      this.scene.time.addEvent({
+         delay: this.cooldownTime,
+         callback: () => {
+            this.cooldown = false;
+         },
+         callbackScope: this.scene,
+      });
+   }
+}
+
+export default Gamer;

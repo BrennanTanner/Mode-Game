@@ -1,10 +1,12 @@
-class Player extends Phaser.Physics.Arcade.Sprite {
+class Player extends Phaser.GameObjects.Sprite {
    constructor(scene) {
       super(scene);
 
       //modes
       this.invincible = false;
       this.loaded = true;
+      this.facing = 'front';
+      this.hit = false;
 
       this.shadow = scene.add.isoSprite(256, 256, 100, 'player');
       this.body = scene.add.isoSprite(256, 256, 100, 'player');
@@ -13,28 +15,33 @@ class Player extends Phaser.Physics.Arcade.Sprite {
          .setTintFill(0x000000)
          .setSize(15, 35)
          .setScale(2)
-         .setOrigin(0.5, 1);
-      this.shadow.scaleY = 1;
+         .setOrigin(0.5, 1)
+         .setAlpha(0.6)
+         .setAngle(-65);
+      this.shadow.scaleY = 0.5;
       this.shadow.preFX.addBlur(1, 1, 1, 1, 0x000000);
-      this.shadow.setAlpha(0.6).setAngle(-65);
 
       scene.cameras.main.startFollow(this.body);
+
+      this.body.setScale(2).setOrigin(0.5, 1).setSize(30, 60);
+
       scene.isoPhysics.world.enable(this.body);
-
-      this.body.setScale(2).setOrigin(0.5, 1);
-
-      //this.body.anims.timeScale = 0.5
-      console.log(this.body.anims);
       //scene.isoPhysics.angleToPointer(this);
       this.body.body.collideWorldBounds = true;
-      //this.body.body.bounce.set(1, 1, 0.2);
+      this.body.body.drag.x = 200
+      this.body.body.drag.y = 200
+
       this.body.anims.play('idle-front', true);
+      console.log(this.body.body);
    }
 
    update(scene) {
-      // console.log(scene.input.mousePointer.worldX+ " " + scene.input.mousePointer.worldY)
-      this.controls(scene);
-      this.animations();
+      if (this.hit) {
+         this.hitAnimations();
+      } else {
+         this.controls(scene);
+         this.animations();
+      }
       scene.graphics.clear();
       this.body.body.debugRender(scene.graphics);
       this.shadow.isoX = this.body.isoX - 5;
@@ -47,63 +54,113 @@ class Player extends Phaser.Physics.Arcade.Sprite {
       //console.log(Math.sqrt(this.body.isoZ*this.body.isoZ))
    }
 
-   animations() {
-      //do this
+   hitAnimations() {
+      this.body.body.bounce.set(0, 0, 0.4);
       const vel = this.body.body.velocity;
+      if (vel.z < 5 && vel.z > -5) {
+         this.scene.time.addEvent({
+            delay: 1000,
+            callback: () => {
+               this.hit = false;
+               this.body.body.bounce.set(0, 0, 0);
+            },
+            callbackScope: this.scene,
+         });
+         this.body.anims.play(`lay-${this.facing}`, true);
+      } else {
+         if ((vel.x < 0 && vel.y >= 0) || (vel.x < 0 && vel.y < 0)) {
+            this.facing = 'front';
+         } else if ((vel.x >= 0 && vel.y >= 0) || (vel.x > 0 && vel.y < 0)) {
+            this.facing = 'rear';
+         }
 
-      this.body.anims.currentAnim.key;
-
-      if (vel.z < 10 && vel.z > -10) {
-         if (this.body.anims.currentAnim.key) {
-            // this.body.anims.playAfterRepeat('land-front', true);
-         }
-         if ((vel.x > 0 && vel.y == 0) || (vel.x == 0 && vel.y > 0)) {
-            this.body.anims.play('run-front', true);
-            this.body.setFlipX(false);
-            if (vel.x == 0 && vel.y > 0) {
-               this.body.setFlipX(true);
-            }
-         } else if ((vel.x < 0 && vel.y == 0) || (vel.x == 0 && vel.y < 0)) {
-            this.body.anims.play('run-rear', true);
-            this.body.setFlipX(false);
-            if (vel.x < 0 && vel.y == 0) {
-               this.body.setFlipX(true);
-            }
-         } else if ((vel.x > 0 && vel.y < 0) || (vel.x < 0 && vel.y > 0)) {
-            this.body.anims.play('run-front', true);
-            this.body.setFlipX(false);
-            if (vel.x < 0 && vel.y > 0) {
-               this.body.setFlipX(true);
-            }
-         } else if (vel.y < 0 && vel.x < 0) {
-            this.body.anims.play('run-up', true);
-         } else if (vel.x > 0 && vel.y > 0) {
-            this.body.anims.play('run-down', true);
-         } else {
-            this.body.anims.play('idle-front', true);
-            this.shadow.isoZ = this.body.isoZ;
-         }
-      } else if (vel.z > -10) {
-         if (
-            (vel.x < 0 && vel.y < 0) ||
-            (vel.x == 0 && vel.y < 0) ||
-            (vel.x < 0 && vel.y == 0)
-         ) {
-            this.body.anims.play('up-rear', true);
-         } else {
-            this.body.anims.play('up-front', true);
-         }
-      } else if (vel.z < 10) {
-         if (
-            (vel.x < 0 && vel.y < 0) ||
-            (vel.x == 0 && vel.y < 0) ||
-            (vel.x < 0 && vel.y == 0)
-         ) {
-            this.body.anims.play('down-rear', true);
-         } else {
-            this.body.anims.play('down-front', true);
+         if (vel.z < -5) {
+            this.body.anims.play(`hit-fall-${this.facing}`, true);
+         } else if (vel.z > 5) {
+            this.body.anims.play(`hit-${this.facing}`, true);
          }
       }
+   }
+   animations() {
+      const vel = this.body.body.velocity;
+      const angle = Phaser.Math.RadToDeg(this.body.body.angle);
+      //this.shadow.anims.play(this.body.anims.currentAnim.key, true);
+
+      if (angle > 45 || angle < -135) {
+         this.body.setFlipX(true);
+      } else if (angle <= 45 && angle >= -135) {
+         this.body.setFlipX(false);
+      }
+      //idle
+      if (vel.x == 0 && vel.y == 0 && vel.z < 10 && vel.z > -10) {
+         this.body.anims.play(`idle-${this.facing}`, true);
+      }
+      //down-left or down-right
+      else if (
+         (angle <= 135 && angle > 67.5) ||
+         (angle < 22.5 && angle >= 0) ||
+         (angle >= -45 && angle < 0)
+      ) {
+         //console.log('1');
+         if (vel.z > 10) {
+            this.facing = 'front';
+            this.body.anims.play('up-front', true);
+         } else if (vel.z < -10) {
+            this.facing = 'front';
+            this.body.anims.play('down-front', true);
+         } else {
+            this.facing = 'front';
+            this.body.anims.play('run-front', true);
+         }
+      }
+      //up-left or up-right
+      else if (
+         angle < -157.5 ||
+         angle > 135 ||
+         (angle > -112.5 && angle < -45)
+      ) {
+         //console.log('2');
+         if (vel.z > 10) {
+            this.facing = 'rear';
+            this.body.anims.play('up-rear', true);
+         } else if (vel.z < -10) {
+            this.facing = 'rear';
+            this.body.anims.play('down-rear', true);
+         } else {
+            this.facing = 'rear';
+            this.body.anims.play('run-rear', true);
+         }
+      }
+      //up
+      else if (angle < -112.5 && angle > -157.5) {
+         //console.log('3');
+         if (vel.z > 10) {
+            this.facing = 'rear';
+            this.body.anims.play('up-rear', true);
+         } else if (vel.z < -10) {
+            this.facing = 'rear';
+            this.body.anims.play('down-rear', true);
+         } else {
+            this.facing = 'rear';
+            this.body.anims.play('run-up', true);
+         }
+      }
+      //down
+      else if (angle < 67.5 && angle > 22.5) {
+         //console.log('4');
+         if (vel.z > 10) {
+            this.facing = 'front';
+            this.body.anims.play('up-front', true);
+         } else if (vel.z < -10) {
+            this.facing = 'front';
+            this.body.anims.play('down-front', true);
+         } else {
+            this.facing = 'front';
+            this.body.anims.play('run-down', true);
+         }
+      }
+
+      //this.shadow.isoZ = this.body.isoZ;
    }
    controls(scene) {
       this.body.body.velocity.y = 0;

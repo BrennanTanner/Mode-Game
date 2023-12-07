@@ -13,6 +13,17 @@ preload.sprites = (scene) => {
       frameWidth: 33,
       frameHeight: 33,
    });
+
+   //Gamer
+   scene.load.spritesheet('gamer', '/images/citizen/citizen-sheet.png', {
+      frameWidth: 33,
+      frameHeight: 33,
+   });
+   //Gamer Hit
+   scene.load.spritesheet('hit', '/images/citizen/hit.png', {
+      frameWidth: 35,
+      frameHeight: 32,
+   });
 };
 
 export default preload;
