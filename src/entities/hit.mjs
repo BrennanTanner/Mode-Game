@@ -36,7 +36,7 @@ class Hit extends Phaser.GameObjects.Sprite {
       this.scene.isoPhysics.moveToObject(
          this.body,
          this.scene.player.body,
-         300
+         400
       );
       }else{
          this.body.body.velocity.x = 0

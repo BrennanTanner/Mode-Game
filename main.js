@@ -13,6 +13,9 @@ var config = {
    pixelArt: true,
    backgroundColor: '#121215',
    scene: [TestScene],
+   physics: {
+    default: "arcade",
+  },
    plugins: {
      scene: [
        { key: 'DebugDrawPlugin', plugin: DebugDrawPlugin, mapping: 'debugDraw' }

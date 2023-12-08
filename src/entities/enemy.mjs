@@ -4,6 +4,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
 
       this.scene = scene;
       //modes
+      this.hit = false;
       this.invincible = false;
       this.cooldown = false;
       this.cooldownTime = 1000;
@@ -11,6 +12,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.agro = false;
       this.moveMethod = 'walk';
       this.speed = 50;
+      this.facing = 'front';
 
       this.shadow = scene.add.isoSprite(x, y, 1, 'gamer');
       this.body = scene.add.isoSprite(x, y, 1, 'gamer', scene.gamers);
@@ -20,10 +22,10 @@ class Gamer extends Phaser.GameObjects.Sprite {
          .setSize(15, 35)
          .setScale(2)
          .setOrigin(0.5, 1)
-         .setAlpha(0.6)
+         .setAlpha(0.3)
          .setAngle(-65);
       this.shadow.scaleY = 1;
-      this.shadow.preFX.addBlur(1, 1, 1, 1, 0x000000);
+      // this.shadow.preFX.addBlur(1, 1, 1, 1, 0x000000);
 
       this.body.setSize(30, 60);
       this.body.setScale(2).setOrigin(0.5, 1);
@@ -33,29 +35,42 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.body.body.collideWorldBounds = true;
       this.body.body.bounce.set(1, 1, 0.2);
       this.body.anims.play('gamer-idle-front', true);
+
+
    }
 
    update() {
-      const distanceToPlayer = this.scene.isoPhysics.distanceBetween(
-         this.body,
-         this.scene.player.body
-      );
-      if (distanceToPlayer <= 300 && !this.cooldown) {
-         this.pathFinding();
-      }
-      if (distanceToPlayer <= 200) {
-         this.moveMethod = 'run';
-         this.speed = 130;
-      }else{
-         this.moveMethod = 'walk';
-         this.speed = 90; 
-      }
+     if(this.scene.player.modeMode){
+      this.body.anims.timeScale = 0.05
+      this.speed = this.speed /50
 
-      if (distanceToPlayer <= 30 && !this.cooldown) {
-         this.hitPlayer();
-      }
+     }else{
+      this.body.anims.timeScale = 1
+     }
 
-      this.animations();
+      if (this.hit) {
+         this.hitAnimations();
+      } else {
+         const distanceToPlayer = this.scene.isoPhysics.distanceBetween(
+            this.body,
+            this.scene.player.body
+         );
+         if (distanceToPlayer <= 300 && !this.cooldown) {
+            this.pathFinding();
+         }
+         if (distanceToPlayer <= 200) {
+            this.moveMethod = 'run';
+            this.speed = 130;
+         }else{
+            this.moveMethod = 'walk';
+            this.speed = 90; 
+         }
+   
+         if (distanceToPlayer <= 30 && !this.cooldown) {
+            this.hitPlayer();
+         }
+         this.animations();
+      }
 
       this.shadow.isoX = this.body.isoX - 5;
       this.shadow.isoY = this.body.isoY - 5;
@@ -64,7 +79,33 @@ class Gamer extends Phaser.GameObjects.Sprite {
          (1000 - Math.sqrt(this.body.isoZ * this.body.isoZ)) * 0.001
       );
    }
+   hitAnimations() {
+      this.body.body.bounce.set(0, 0, 0.4);
+      const vel = this.body.body.velocity;
+      if (vel.z < 5 && vel.z > -5) {
+         this.scene.time.addEvent({
+            delay: 1000,
+            callback: () => {
+               this.hit = false;
+               this.body.body.bounce.set(0, 0, 0);
+            },
+            callbackScope: this.scene,
+         });
+         this.body.anims.play(`gamer-flip`, true);
+      } else {
+         if ((vel.x < 0 && vel.y >= 0) || (vel.x < 0 && vel.y < 0)) {
+            this.facing = 'front';
+         } else if ((vel.x >= 0 && vel.y >= 0) || (vel.x > 0 && vel.y < 0)) {
+            this.facing = 'rear';
+         }
 
+         if (vel.z < -5) {
+            this.body.anims.play(`hit-fall-${this.facing}`, true);
+         } else if (vel.z > 5) {
+            this.body.anims.play(`hit-${this.facing}`, true);
+         }
+      }
+   }
    animations() {
       const vel = this.body.body.velocity;
       const angle = Phaser.Math.RadToDeg(this.body.body.angle);
