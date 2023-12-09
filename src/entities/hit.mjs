@@ -5,6 +5,7 @@ class Hit extends Phaser.GameObjects.Sprite {
 
       this.scene = scene;
       //modes
+      this.speed = 1;
       this.invincible = false;
 
       this.body = scene.add.isoSprite(x, y, z);
@@ -32,12 +33,28 @@ class Hit extends Phaser.GameObjects.Sprite {
    }
 
    update(){
+      if(this.scene.player.modeMode){
+         this.timeScale = 0.05
+        this.speed = 0.05
+  
+       }else{
+         this.speed = 1
+        this.body.anims.timeScale = 1
+       }
+
       if(!this.hasHit){
-      this.scene.isoPhysics.moveToObject(
-         this.body,
-         this.scene.player.body,
-         400
-      );
+      // this.scene.isoPhysics.moveToObject(
+      //    this.body,
+      //    this.scene.player.body,
+      //    this.speed*400
+      // );
+      const angle = this.scene.isoPhysics.anglesToXYZ(this.body, this.scene.player.body.x, this.scene.player.body.y, this.scene.player.body.z)
+
+      const newVel = this.scene.isoPhysics.velocityFromAngles(angle.theta, angle.phi, 300*this.speed)
+
+      this.scene.player.body.body.velocity =newVel
+
+
       }else{
          this.body.body.velocity.x = 0
          this.body.body.velocity.y = 0

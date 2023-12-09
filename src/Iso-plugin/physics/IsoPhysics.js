@@ -215,10 +215,9 @@ export default class IsoPhysics {
    */
   angleToPointer(displayObjectBody, pointer) {
     pointer = pointer || this.scene.input.activePointer;
-    var isoPointer = this.projector.unproject(pointer.position, undefined, displayObjectBody.z);
-    isoPointer.z = displayObjectBody.z;
+    var isoPointer = this.projector.unproject({x:pointer.worldX,y:pointer.worldY}, undefined, displayObjectBody.body.z);
+    isoPointer.z = displayObjectBody.body.z;
     var a = this.anglesToXYZ(displayObjectBody, isoPointer.x, isoPointer.y, isoPointer.z);
-
     return a.theta;
   }
 
@@ -226,22 +225,20 @@ export default class IsoPhysics {
    * Given the angle (in degrees) and speed calculate the velocity and return it as a Point object, or set it to the given point object.
    * One way to use this is: velocityFromAngle(angle, 200, sprite.velocity) which will set the values directly to the sprites velocity and not create a new Point object.
    *
-   * @method Phaser.Physics.IsoPhysics#velocityFromAngle
+   * @method Phaser.Physics.IsoPhysics#velocityFromAngles
    * @param {number} theta - The angle in radians for x,y in the isometric co-ordinate system
    * @param {number} [phi=Math.PI/2] - The angle in radians for z in the isometric co-ordinate system
    * @param {number} [speed=60] - The speed it will move, in pixels per second sq.
    * @param {Phaser.Point|object} [point] - The Point object in which the x and y properties will be set to the calculated velocity.
    * @return {Point3} - A Point where point.x contains the velocity x value and so on for y and z.
    */
-  velocityFromAngles(theta, phi, speed) {
+  velocityFromAngles(theta, phi, speed=400, object = new Point3) {
     if (phi === undefined) { phi = Math.sin(Math.PI / 2); }
-    if (speed === undefined) { speed = 60; }
 
-    return new Point3(
-      Math.cos(theta) * Math.sin(phi) * speed,
-      Math.sin(theta) * Math.sin(phi) * speed,
-      Math.cos(phi) * speed
-    );
+    object = {x:(Math.cos(theta) * Math.sin(phi) * speed),
+      y:(Math.sin(theta) * Math.sin(phi) * speed),
+      z:(Math.cos(phi) * speed)}
+    return object
   }
 
   /**

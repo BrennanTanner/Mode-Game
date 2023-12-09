@@ -65,11 +65,11 @@ class TestScene extends Phaser.Scene {
          maxSize: 20,
          runChildUpdate: true,
       });
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 2; i++) {
    this.gamers.create(50* i, 50* i)
    
 }
-      this.gamers.create(250, 250)
+      // this.gamers.create(250, 250)
       //new Gamer(this, 250, 250)
       for (let i = 0; i < 3; i++) {
          const cube = this.add.isoSprite(50 * i, 250, 0, 'ground');
@@ -127,9 +127,6 @@ for (let i = 0; i < 5; i++) {
    hitPlayer(hit){
       this.player.hit = true;
       hit.hasHit = true;
-      this.player.body.body.velocity.z=20
-      //hit.delete();
-      //console.log(this.player)
    }
 
    loadingBar() {

@@ -9,6 +9,7 @@ class Player extends Phaser.GameObjects.Sprite {
       this.facing = 'front';
       this.hit = false;
       this.modeMode = false;
+      this.slowMotion = 0.05;
 
       this.shadow = scene.add.isoSprite(256, 256, 100, 'player');
       this.body = scene.add.isoSprite(256, 256, 100, 'player');
@@ -33,10 +34,28 @@ class Player extends Phaser.GameObjects.Sprite {
       this.body.body.drag.y = 200;
 
       this.body.anims.play('idle-front', true);
+      console.log(this.scene.isoPhysics);
    }
 
    update() {
       if (Phaser.Input.Keyboard.JustDown(this.scene.EKey)) {
+         // this.scene.physics.world.timeScale = 0.5;
+         // this.scene.time.timeScale = 0.5;
+         if (this.modeMode) {
+            this.scene.isoPhysics.world.bodies.entries.map((body) => {
+               body.velocity.x = body.velocity.x / 0.05;
+               body.velocity.y = body.velocity.y / 0.05;
+               body.velocity.z = body.velocity.z / 0.05;
+            });
+            this.scene.isoPhysics.world.gravity.z = -500;
+         } else {
+            this.scene.isoPhysics.world.bodies.entries.map((body) => {
+               body.velocity.x = body.velocity.x * 0.05;
+               body.velocity.y = body.velocity.y * 0.05;
+               body.velocity.z = body.velocity.z * 0.05;
+            });
+            this.scene.isoPhysics.world.gravity.z = -25;
+         }
          this.modeMode = !this.modeMode;
          console.log('mode: ' + this.modeMode);
       }
@@ -66,9 +85,7 @@ class Player extends Phaser.GameObjects.Sprite {
       //console.log(Math.sqrt(this.body.isoZ*this.body.isoZ))
    }
 
-   modeControls() {
-
-   }
+   modeControls() {}
    modeAnimations() {
       const angle = Phaser.Math.RadToDeg(
          this.scene.isoPhysics.angleToPointer(this.body)
@@ -108,15 +125,11 @@ class Player extends Phaser.GameObjects.Sprite {
       this.body.body.bounce.set(0, 0, 0.4);
       const vel = this.body.body.velocity;
       if (vel.z < 5 && vel.z > -5) {
-         this.scene.time.addEvent({
-            delay: 1000,
-            callback: () => {
-               this.hit = false;
-               this.body.body.bounce.set(0, 0, 0);
-            },
-            callbackScope: this.scene,
-         });
-         this.body.anims.play(`lay-${this.facing}`, true);
+         this.body.anims.play(`get-up-${this.facing}`, true);
+         if (this.body.anims.getProgress() == 1) {
+            this.hit = false;
+            this.body.body.bounce.set(0, 0, 0);
+         }
       } else {
          if ((vel.x < 0 && vel.y >= 0) || (vel.x < 0 && vel.y < 0)) {
             this.facing = 'front';

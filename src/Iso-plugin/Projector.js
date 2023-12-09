@@ -91,6 +91,7 @@ class Projector {
    * @return {Phaser.Geom.Point} The transformed Point.
    */
   projectXY(point3, out = new Point()) {
+    
     out.x = (point3.x - point3.y) * this._transform[0];
     out.y = (point3.x + point3.y) * this._transform[1];
 
@@ -109,9 +110,11 @@ class Projector {
    * @return {Point3} The transformed Point3.
    */
   unproject(point, out = new Point3(), z = 0) {
-    const x = point.x - this.scene.cameras.main.scrollX - (this.scene.cameras.main.width * this.origin.x);
-    const y = point.y + this.scene.cameras.main.scrollY - (this.scene.cameras.main.height * this.origin.y) + z;
+    const { width, height } = this.scene.sys.game.config; 
+    const x = point.x -  (width * this.origin.x);
+    const y = point.y - (height * this.origin.y) + z;
 
+ //this.scene.cameras.main.scrollX
     out.x = x / (2 * this._transform[0]) + y / (2 * this._transform[1]);
     out.y = -(x / (2 * this._transform[0])) + y / (2 * this._transform[1]);
     out.z = z;

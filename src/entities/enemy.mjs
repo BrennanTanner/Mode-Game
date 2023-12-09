@@ -11,7 +11,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.agroTime = 1000;
       this.agro = false;
       this.moveMethod = 'walk';
-      this.speed = 50;
+      this.speed = 1;
       this.facing = 'front';
 
       this.shadow = scene.add.isoSprite(x, y, 1, 'gamer');
@@ -36,13 +36,14 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.body.body.bounce.set(1, 1, 0.2);
       this.body.anims.play('gamer-idle-front', true);
 
+      //this.scene.physics.world.timeScale = 0.1
 
    }
 
    update() {
      if(this.scene.player.modeMode){
-      this.body.anims.timeScale = 0.05
-      this.speed = this.speed /50
+       this.body.anims.timeScale = 0.05
+      this.speed = 0.05
 
      }else{
       this.body.anims.timeScale = 1
@@ -60,10 +61,10 @@ class Gamer extends Phaser.GameObjects.Sprite {
          }
          if (distanceToPlayer <= 200) {
             this.moveMethod = 'run';
-            this.speed = 130;
+            this.speed = 1.3;
          }else{
             this.moveMethod = 'walk';
-            this.speed = 90; 
+            this.speed = .9; 
          }
    
          if (distanceToPlayer <= 30 && !this.cooldown) {
@@ -191,7 +192,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.scene.isoPhysics.moveToObjectXY(
          this.body,
          this.scene.player.body,
-         this.speed
+         this.speed * 100
       );
       if (this.body.isoZ < 1) {
          this.body.body.velocity.z = 0;
@@ -204,7 +205,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.scene.hits.create(
          this.body.isoX,
          this.body.isoY,
-         this.body.isoZ,
+         this.body.isoZ-70,
          this.facing
       );
 

@@ -97,13 +97,13 @@ create.animations = (scene) => {
    });
    scene.anims.create({
       key: 'get-up-front',
-      frames: scene.anims.generateFrameNumbers('player', { frames: [26, 27] }),
-      frameRate: 2,
+      frames: scene.anims.generateFrameNumbers('player', { frames: [26, 27, 7, 8, 6] }),
+      frameRate: 7,
    });
    scene.anims.create({
       key: 'get-gun-front',
       frames: scene.anims.generateFrameNumbers('player', { frames: [18, 19] }),
-      frameRate: 2,
+      frameRate: 5,
    });
    scene.anims.create({
       key: 'aim-front',
@@ -158,13 +158,13 @@ create.animations = (scene) => {
    });
    scene.anims.create({
       key: 'get-up-rear',
-      frames: scene.anims.generateFrameNumbers('player', { frames: [32, 33] }),
-      frameRate: 2,
+      frames: scene.anims.generateFrameNumbers('player', { frames: [32, 33, 9, 10, 11] }),
+      frameRate: 7,
    });
    scene.anims.create({
       key: 'get-gun-rear',
       frames: scene.anims.generateFrameNumbers('player', { frames: [22, 23] }),
-      frameRate: 2,
+      frameRate: 5,
    });
    scene.anims.create({
       key: 'aim-rear',
