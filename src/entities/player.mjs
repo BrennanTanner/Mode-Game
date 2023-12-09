@@ -122,13 +122,16 @@ class Player extends Phaser.GameObjects.Sprite {
       }
    }
    hitAnimations() {
-      this.body.body.bounce.set(0, 0, 0.4);
+      this.body.body.bounce.set(0, 0, 0.5);
       const vel = this.body.body.velocity;
-      if (vel.z < 5 && vel.z > -5) {
-         this.body.anims.play(`get-up-${this.facing}`, true);
-         if (this.body.anims.getProgress() == 1) {
-            this.hit = false;
-            this.body.body.bounce.set(0, 0, 0);
+      if (vel.z < 25 && vel.z > -25) {
+         this.body.anims.play(`lay-${this.facing}`, true);
+         if (vel.x < 5 && vel.x > -5 && vel.y < 5 && vel.y > -5) {
+            this.body.anims.play(`get-up-${this.facing}`, true);
+            if (this.body.anims.getProgress() == 1) {
+               this.hit = false;
+               this.body.body.bounce.set(0, 0, 0);
+            }
          }
       } else {
          if ((vel.x < 0 && vel.y >= 0) || (vel.x < 0 && vel.y < 0)) {

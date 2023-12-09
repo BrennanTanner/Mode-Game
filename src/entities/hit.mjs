@@ -48,7 +48,7 @@ class Hit extends Phaser.GameObjects.Sprite {
       //    this.scene.player.body,
       //    this.speed*400
       // );
-      const angle = this.scene.isoPhysics.anglesToXYZ(this.body, this.scene.player.body.x, this.scene.player.body.y, this.scene.player.body.z)
+      const angle = this.scene.isoPhysics.anglesToXYZ(this.body, this.scene.player.body.x, this.scene.player.body.y, this.scene.player.body.z+80)
 
       const newVel = this.scene.isoPhysics.velocityFromAngles(angle.theta, angle.phi, 300*this.speed)
 

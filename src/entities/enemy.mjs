@@ -205,7 +205,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.scene.hits.create(
          this.body.isoX,
          this.body.isoY,
-         this.body.isoZ-70,
+         this.body.isoZ,
          this.facing
       );
 
