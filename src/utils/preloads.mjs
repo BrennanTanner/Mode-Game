@@ -24,6 +24,16 @@ preload.sprites = (scene) => {
       frameWidth: 35,
       frameHeight: 32,
    });
+      //pizza
+      scene.load.spritesheet('pizza', '/images/pizza/pizza.png', {
+         frameWidth: 16,
+         frameHeight: 16,
+      });
+         //car
+   scene.load.spritesheet('car', '/images/vehicles/car_red.png', {
+      frameWidth: 33,
+      frameHeight: 33,
+   });
 };
 
 export default preload;

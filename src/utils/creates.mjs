@@ -1,4 +1,6 @@
 import Player from '../entities/player.mjs';
+import Pizza from '../entities/pizza.mjs';
+import Gamer from '../entities/enemy.mjs';
 
 const create = {};
 
@@ -26,9 +28,12 @@ create.map = (scene) => {
 create.player = (scene) => {
    scene.player = new Player(scene);
 };
+create.pizza = (scene) => {
+   scene.pizza = new Pizza(scene);
+};
 
 create.gamer = (scene, x, y) => {
-   scene.gamers.add(new Player(scene, x, y));
+   scene.gamers.add(new Gamer(scene, x, y));
 };
 
 create.animations = (scene) => {
@@ -97,7 +102,7 @@ create.animations = (scene) => {
    });
    scene.anims.create({
       key: 'get-up-front',
-      frames: scene.anims.generateFrameNumbers('player', { frames: [26, 27, 7, 8, 6] }),
+      frames: scene.anims.generateFrameNumbers('player', { frames: [26, 27, 30, 8, 6] }),
       frameRate: 7,
    });
    scene.anims.create({
@@ -158,7 +163,7 @@ create.animations = (scene) => {
    });
    scene.anims.create({
       key: 'get-up-rear',
-      frames: scene.anims.generateFrameNumbers('player', { frames: [32, 33, 9, 10, 11] }),
+      frames: scene.anims.generateFrameNumbers('player', { frames: [32, 33, 28, 10, 11] }),
       frameRate: 7,
    });
    scene.anims.create({
@@ -335,6 +340,59 @@ create.animations = (scene) => {
       }),
       frameRate: 10,
    });
+
+
+   //pizza
+   scene.anims.create({
+      key: 'pizza-up',
+      frames: scene.anims.generateFrameNumbers('pizza', {
+         frames: [0],
+      })
+   });
+   scene.anims.create({
+      key: 'pizza-down',
+      frames: scene.anims.generateFrameNumbers('pizza', {
+         frames: [1],
+      })
+   });
+
+   //car
+   scene.anims.create({
+      key: 'car-up',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [0],
+      })
+   });
+   scene.anims.create({
+      key: 'car-down',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [4],
+      })
+   });
+   scene.anims.create({
+   key: 'car-side',
+   frames: scene.anims.generateFrameNumbers('car', {
+      frames: [2],
+   })
+   
+});
+scene.anims.create({
+   key: 'car-rear',
+   frames: scene.anims.generateFrameNumbers('car', {
+      frames: [3],
+   })
+   
+});
+scene.anims.create({
+   key: 'car-front',
+   frames: scene.anims.generateFrameNumbers('car', {
+      frames: [1],
+   })
+   
+});
 };
+
+
+
 
 export default create;

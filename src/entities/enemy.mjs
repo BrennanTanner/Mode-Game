@@ -7,7 +7,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.hit = false;
       this.invincible = false;
       this.cooldown = false;
-      this.cooldownTime = 1000;
+      this.cooldownTime = 500;
       this.agroTime = 1000;
       this.agro = false;
       this.moveMethod = 'walk';
@@ -15,7 +15,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.facing = 'front';
 
       this.shadow = scene.add.isoSprite(x, y, 1, 'gamer');
-      this.body = scene.add.isoSprite(x, y, 1, 'gamer', scene.gamers);
+      this.body = scene.add.isoSprite(x, y, 1, 'gamer');
 
       this.shadow
          .setTintFill(0x000000)
@@ -26,6 +26,8 @@ class Gamer extends Phaser.GameObjects.Sprite {
          .setAngle(-65);
       this.shadow.scaleY = 1;
       // this.shadow.preFX.addBlur(1, 1, 1, 1, 0x000000);
+      const color = this.body.preFX.addColorMatrix()
+      color.hue(Phaser.Math.Between(0, 360));
 
       this.body.setSize(30, 60);
       this.body.setScale(2).setOrigin(0.5, 1);
@@ -35,7 +37,8 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.body.body.collideWorldBounds = true;
       this.body.body.bounce.set(1, 1, 0.2);
       this.body.anims.play('gamer-idle-front', true);
-
+      this.body.body.drag.x = 200;
+      this.body.body.drag.y = 200;
       //this.scene.physics.world.timeScale = 0.1
 
    }
@@ -51,15 +54,15 @@ class Gamer extends Phaser.GameObjects.Sprite {
 
       if (this.hit) {
          this.hitAnimations();
-      } else {
-         const distanceToPlayer = this.scene.isoPhysics.distanceBetween(
+      } else{
+         const distanceToPizza = this.scene.isoPhysics.distanceBetween(
             this.body,
-            this.scene.player.body
+            this.scene.pizza.body
          );
-         if (distanceToPlayer <= 300 && !this.cooldown) {
+         if (distanceToPizza <= 300) {
             this.pathFinding();
          }
-         if (distanceToPlayer <= 200) {
+         if (distanceToPizza <= 200) {
             this.moveMethod = 'run';
             this.speed = 1.3;
          }else{
@@ -67,8 +70,10 @@ class Gamer extends Phaser.GameObjects.Sprite {
             this.speed = .9; 
          }
    
-         if (distanceToPlayer <= 30 && !this.cooldown) {
+         if (distanceToPizza <= 30 && !this.cooldown) {
+            if(this.scene.pizza.holder.name == 'player'){
             this.hitPlayer();
+            }
          }
          this.animations();
       }
@@ -189,9 +194,15 @@ class Gamer extends Phaser.GameObjects.Sprite {
    }
 
    pathFinding() {
-      this.scene.isoPhysics.moveToObjectXY(
+      if(this.scene.player.hit){
+         this.moveMethod = 'walk';
+            this.speed = .5; 
+            
+            
+      }else{
+          this.scene.isoPhysics.moveToObjectXY(
          this.body,
-         this.scene.player.body,
+         this.scene.pizza.body,
          this.speed * 100
       );
       if (this.body.isoZ < 1) {
@@ -199,6 +210,8 @@ class Gamer extends Phaser.GameObjects.Sprite {
       } else {
          this.body.body.velocity.z = -150;
       }
+      }
+     
    }
    hitPlayer() {
       this.cooldown = true;

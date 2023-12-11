@@ -7,14 +7,14 @@ class Hit extends Phaser.GameObjects.Sprite {
       //modes
       this.speed = 1;
       this.invincible = false;
-
+this.hasHit = false;
       this.body = scene.add.isoSprite(x, y, z);
       this.body.setSize(50, 50, 50).setScale(2);
       if(facing == "front"){
-         this.setSize(100, 100).setScale(2).setOrigin(.5, 0).setPosition(this.body.x,this.body.y-60).setDepth(scene.player.body.depth+1);
+         this.setSize(100, 100, 30).setScale(2).setOrigin(.5, 0).setPosition(this.body.x,this.body.y-60).setDepth(scene.player.body.depth+1);
          this.z = 2000;
       } else {
-         this.setSize(100, 100).setScale(2).setOrigin(.5, 0).setPosition(this.body.x,this.body.y).setDepth(scene.player.body.depth-1).setRotation(3);
+         this.setSize(100, 100, 30).setScale(2).setOrigin(.5, 0).setPosition(this.body.x,this.body.y).setDepth(scene.player.body.depth-1).setRotation(3);
       }
 
       
@@ -25,7 +25,7 @@ class Hit extends Phaser.GameObjects.Sprite {
       this.body.body.allowGravity = false;
 
       this.hasHit = false;
-
+      this.body.name='hit'
       this.play('hit-swipe', true);
       this.once('animationcomplete', () => {
         this.destroy();
@@ -42,28 +42,29 @@ class Hit extends Phaser.GameObjects.Sprite {
         this.body.anims.timeScale = 1
        }
 
+
       if(!this.hasHit){
-      // this.scene.isoPhysics.moveToObject(
-      //    this.body,
-      //    this.scene.player.body,
-      //    this.speed*400
-      // );
-      const angle = this.scene.isoPhysics.anglesToXYZ(this.body, this.scene.player.body.x, this.scene.player.body.y, this.scene.player.body.z+80)
+      this.scene.isoPhysics.moveToObject(
+         this.body,
+         this.scene.player.body,
+         this.speed*200
+      );
+    
+      const angle = this.scene.isoPhysics.anglesToXYZ(this.body, this.scene.player.body.isoX, this.scene.player.body.isoY, this.scene.player.body.isoZ+30)
 
       const newVel = this.scene.isoPhysics.velocityFromAngles(angle.theta, angle.phi, 300*this.speed)
 
       this.scene.player.body.body.velocity =newVel
+    
 
-
-      }else{
-         this.body.body.velocity.x = 0
-         this.body.body.velocity.y = 0
-         this.body.body.velocity.z = 0
+         this.hasHit = true;
       }
       }
 delete(){
    this.destroy();
 }
+
+
 }
 
 export default Hit;

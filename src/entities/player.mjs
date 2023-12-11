@@ -32,9 +32,9 @@ class Player extends Phaser.GameObjects.Sprite {
       this.body.body.collideWorldBounds = true;
       this.body.body.drag.x = 200;
       this.body.body.drag.y = 200;
-
+this.body.name='player'
       this.body.anims.play('idle-front', true);
-      console.log(this.scene.isoPhysics);
+      //console.log(this.body);
    }
 
    update() {
@@ -125,14 +125,15 @@ class Player extends Phaser.GameObjects.Sprite {
       this.body.body.bounce.set(0, 0, 0.5);
       const vel = this.body.body.velocity;
       if (vel.z < 25 && vel.z > -25) {
-         this.body.anims.play(`lay-${this.facing}`, true);
+        
          if (vel.x < 5 && vel.x > -5 && vel.y < 5 && vel.y > -5) {
             this.body.anims.play(`get-up-${this.facing}`, true);
             if (this.body.anims.getProgress() == 1) {
                this.hit = false;
                this.body.body.bounce.set(0, 0, 0);
             }
-         }
+         }else{this.body.anims.play(`lay-${this.facing}`, true);}
+         
       } else {
          if ((vel.x < 0 && vel.y >= 0) || (vel.x < 0 && vel.y < 0)) {
             this.facing = 'front';

@@ -857,8 +857,8 @@ export default class World {
 
         if (spriteOne && spriteTwo) {
           this.collideSpriteVsSprite(
-            spriteOne,
-            spriteTwo,
+            spriteOne.type === "IsoSprite" ?spriteOne:spriteOne.body,
+            spriteTwo.type === "IsoSprite" ?spriteTwo:spriteTwo.body,
             collideCallback,
             processCallback,
             callbackContext,
