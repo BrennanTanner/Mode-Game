@@ -67,7 +67,7 @@ export default class IsoPhysics {
         continue;
       }
 
-      var distance = this.distanceBetweenSquared(source, target);
+      var distance = this.distanceBetweenSquared(source, target.type === "IsoSprite" ?target:target.body);
 
       if (distance < min) {
         closest = target;

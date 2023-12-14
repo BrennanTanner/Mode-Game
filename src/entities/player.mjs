@@ -10,78 +10,87 @@ class Player extends Phaser.GameObjects.Sprite {
       this.hit = false;
       this.modeMode = false;
       this.slowMotion = 0.05;
+      this.drive = false;
+      this.car = null;
 
       this.shadow = scene.add.isoSprite(256, 256, 100, 'player');
       this.body = scene.add.isoSprite(256, 256, 100, 'player');
 
       this.shadow
          .setTintFill(0x000000)
-         .setSize(15, 35)
-         .setScale(2)
-         .setOrigin(0.5, 1)
+         .setSize(1)
+         .setOrigin(1, 0.5)
          .setAlpha(0.3)
-         .setAngle(-65);
-      this.shadow.scaleY = 0.5;
+         .setAngle(-60);
 
+         this.shadow.scaleY = 0.1;
       scene.cameras.main.startFollow(this.body);
+      
 
-      this.body.setScale(2).setOrigin(0.5, 1).setSize(30, 60);
+      this.body.setOrigin(0.5, 1).setSize(30, 60);
 
       scene.isoPhysics.world.enable(this.body);
 
       this.body.body.collideWorldBounds = true;
       this.body.body.drag.x = 200;
       this.body.body.drag.y = 200;
-this.body.name='player'
+      this.body.name = 'player';
       this.body.anims.play('idle-front', true);
       //console.log(this.body);
    }
 
    update() {
-      if (Phaser.Input.Keyboard.JustDown(this.scene.EKey)) {
-         // this.scene.physics.world.timeScale = 0.5;
-         // this.scene.time.timeScale = 0.5;
-         if (this.modeMode) {
-            this.scene.isoPhysics.world.bodies.entries.map((body) => {
-               body.velocity.x = body.velocity.x / 0.05;
-               body.velocity.y = body.velocity.y / 0.05;
-               body.velocity.z = body.velocity.z / 0.05;
-            });
-            this.scene.isoPhysics.world.gravity.z = -500;
-         } else {
-            this.scene.isoPhysics.world.bodies.entries.map((body) => {
-               body.velocity.x = body.velocity.x * 0.05;
-               body.velocity.y = body.velocity.y * 0.05;
-               body.velocity.z = body.velocity.z * 0.05;
-            });
-            this.scene.isoPhysics.world.gravity.z = -25;
-         }
-         this.modeMode = !this.modeMode;
-         console.log('mode: ' + this.modeMode);
-      }
-      this.shadow.anims.play(this.body.anims.currentAnim.key, true);
-      this.shadow.setFlipX(this.body.flipX);
-      if (this.modeMode) {
-         this.modeControls();
-         this.modeAnimations();
+      if (this.drive) {
+         this.body.isoX = this.car.body.isoX;
+         this.body.isoY = this.car.body.isoY;
+         this.body.isoZ = this.car.body.isoZ;
+         this.driveControls();
       } else {
-         if (this.hit) {
-            this.hitAnimations();
-         } else {
-            this.runControls(this.scene);
-            this.animations();
+         if (Phaser.Input.Keyboard.JustDown(this.scene.keys.QKey)) {
+            // this.scene.physics.world.timeScale = 0.5;
+            // this.scene.time.timeScale = 0.5;
+            if (this.modeMode) {
+               //this.scene.shader.active=false;
+               this.scene.isoPhysics.world.bodies.entries.map((body) => {
+                  body.velocity.x = body.velocity.x / 0.05;
+                  body.velocity.y = body.velocity.y / 0.05;
+                  body.velocity.z = body.velocity.z / 0.05;
+               });
+               this.scene.isoPhysics.world.gravity.z = -500;
+            } else {
+              // this.scene.shader.active=true;
+               this.scene.isoPhysics.world.bodies.entries.map((body) => {
+                  body.velocity.x = body.velocity.x * 0.05;
+                  body.velocity.y = body.velocity.y * 0.05;
+                  body.velocity.z = body.velocity.z * 0.05;
+               });
+               this.scene.isoPhysics.world.gravity.z = -25;
+            }
+            this.modeMode = !this.modeMode;
+            console.log('mode: ' + this.modeMode);
          }
+         this.shadow.anims.play(this.body.anims.currentAnim.key, true);
+         this.shadow.setFlipX(this.body.flipX);
+         if (this.modeMode) {
+            this.modeControls();
+            this.modeAnimations();
+         } else {
+            if (this.hit) {
+               this.hitAnimations();
+            } else {
+               this.runControls(this.scene);
+               this.animations();
+               this.driveControls();
+            }
+         }
+
+         this.shadow.isoX = this.body.isoX - 5;
+         this.shadow.isoY = this.body.isoY - 5;
+         this.shadow.isoZ = 0;
+         this.shadow.setScale(
+            (800 - Math.sqrt(this.body.isoZ * this.body.isoZ)) * 0.001
+         );
       }
-
-      this.scene.graphics.clear();
-      this.body.body.debugRender(this.scene.graphics);
-      this.shadow.isoX = this.body.isoX - 5;
-      this.shadow.isoY = this.body.isoY - 5;
-      this.shadow.isoZ = 0;
-      this.shadow.setScale(
-         (1000 - Math.sqrt(this.body.isoZ * this.body.isoZ)) * 0.001
-      );
-
       //console.log(Math.sqrt(this.body.isoZ*this.body.isoZ))
    }
 
@@ -125,15 +134,15 @@ this.body.name='player'
       this.body.body.bounce.set(0, 0, 0.5);
       const vel = this.body.body.velocity;
       if (vel.z < 25 && vel.z > -25) {
-        
          if (vel.x < 5 && vel.x > -5 && vel.y < 5 && vel.y > -5) {
             this.body.anims.play(`get-up-${this.facing}`, true);
             if (this.body.anims.getProgress() == 1) {
                this.hit = false;
                this.body.body.bounce.set(0, 0, 0);
             }
-         }else{this.body.anims.play(`lay-${this.facing}`, true);}
-         
+         } else {
+            this.body.anims.play(`lay-${this.facing}`, true);
+         }
       } else {
          if ((vel.x < 0 && vel.y >= 0) || (vel.x < 0 && vel.y < 0)) {
             this.facing = 'front';
@@ -168,7 +177,6 @@ this.body.name='player'
          (angle < 22.5 && angle >= 0) ||
          (angle >= -45 && angle < 0)
       ) {
-         //console.log('1');
          if (vel.z > 10) {
             this.facing = 'front';
             this.body.anims.play('up-front', true);
@@ -186,7 +194,6 @@ this.body.name='player'
          angle > 135 ||
          (angle > -112.5 && angle < -45)
       ) {
-         //console.log('2');
          if (vel.z > 10) {
             this.facing = 'rear';
             this.body.anims.play('up-rear', true);
@@ -200,7 +207,6 @@ this.body.name='player'
       }
       //up
       else if (angle < -112.5 && angle > -157.5) {
-         //console.log('3');
          if (vel.z > 10) {
             this.facing = 'rear';
             this.body.anims.play('up-rear', true);
@@ -232,45 +238,95 @@ this.body.name='player'
    runControls() {
       this.body.body.velocity.y = 0;
       this.body.body.velocity.x = 0;
-      if (this.scene.cursors.left.isDown || this.scene.AKey.isDown) {
+      if (this.scene.cursors.left.isDown || this.scene.keys.AKey.isDown) {
          //left
-         this.body.body.velocity.y = 150;
-         this.body.body.velocity.x = -150;
+         this.body.body.velocity.y = 75;
+         this.body.body.velocity.x = -75;
 
-         if (this.scene.cursors.up.isDown || this.scene.WKey.isDown) {
+         if (this.scene.cursors.up.isDown || this.scene.keys.WKey.isDown) {
             //left-up
-            this.body.body.velocity.x = -225;
+            this.body.body.velocity.x = -115;
             this.body.body.velocity.y = 0;
-         } else if (this.scene.cursors.down.isDown || this.scene.SKey.isDown) {
+         } else if (
+            this.scene.cursors.down.isDown ||
+            this.scene.keys.SKey.isDown
+         ) {
             //left-down
             this.body.body.velocity.x = 0;
-            this.body.body.velocity.y = 225;
+            this.body.body.velocity.y = 115;
          }
-      } else if (this.scene.cursors.right.isDown || this.scene.DKey.isDown) {
+      } else if (
+         this.scene.cursors.right.isDown ||
+         this.scene.keys.DKey.isDown
+      ) {
          //right
-         this.body.body.velocity.x = 150;
-         this.body.body.velocity.y = -150;
-         if (this.scene.cursors.up.isDown || this.scene.WKey.isDown) {
+         this.body.body.velocity.x = 75;
+         this.body.body.velocity.y = -75;
+         if (this.scene.cursors.up.isDown || this.scene.keys.WKey.isDown) {
             //right-up
-            this.body.body.velocity.y = -225;
+            this.body.body.velocity.y = -115;
             this.body.body.velocity.x = 0;
-         } else if (this.scene.cursors.down.isDown || this.scene.SKey.isDown) {
+         } else if (
+            this.scene.cursors.down.isDown ||
+            this.scene.keys.SKey.isDown
+         ) {
             //right-down
-            this.body.body.velocity.x = 225;
+            this.body.body.velocity.x = 115;
             this.body.body.velocity.y = 0;
          }
-      } else if (this.scene.cursors.up.isDown || this.scene.WKey.isDown) {
+      } else if (this.scene.cursors.up.isDown || this.scene.keys.WKey.isDown) {
          //up
-         this.body.body.velocity.x = -150;
-         this.body.body.velocity.y = -150;
-      } else if (this.scene.cursors.down.isDown || this.scene.SKey.isDown) {
+         this.body.body.velocity.x = -75;
+         this.body.body.velocity.y = -75;
+      } else if (
+         this.scene.cursors.down.isDown ||
+         this.scene.keys.SKey.isDown
+      ) {
          //down
-         this.body.body.velocity.x = 150;
-         this.body.body.velocity.y = 150;
+         this.body.body.velocity.x = 75;
+         this.body.body.velocity.y = 75;
       }
 
-      if (Phaser.Input.Keyboard.JustDown(this.scene.spaceKey)) {
+      if (Phaser.Input.Keyboard.JustDown(this.scene.keys.spaceKey)) {
          this.body.body.velocity.z = 250;
+        
+      }
+   }
+   driveControls() {
+      if (Phaser.Input.Keyboard.JustDown(this.scene.keys.EKey)) {
+         const closestCar = this.scene.isoPhysics.closestBody(
+            this.body,
+            this.scene.cars.children.entries
+         );
+         if (this.drive) {
+            this.body.isoX = this.body.isoX +100;
+            this.body.isoY = this.body.isoY+100;
+
+            
+            this.body.body.enable = true;
+            this.body.setVisible(true);
+            this.shadow.setVisible(true);
+            this.drive = false;
+            closestCar.drive = false;
+            this.car = null;
+            if(this.scene.pizza.holder.name == 'car'){
+               this.scene.pizza.holder = this.body
+            }
+         }
+         if (
+            this.scene.isoPhysics.distanceBetween(this.body, closestCar.body) <=
+            60
+         ) {
+            this.body.body.enable = false;
+            this.body.setVisible(false);
+            this.shadow.setVisible(false);
+            this.drive = true;
+            closestCar.drive = true;
+            this.car = closestCar;
+            if(this.scene.pizza.holder.name == 'player'){
+               this.scene.pizza.holder = this.car
+            }
+         }
       }
    }
 }

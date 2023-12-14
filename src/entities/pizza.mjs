@@ -8,8 +8,8 @@ class Pizza extends Phaser.GameObjects.Sprite {
       this.holder = false;
       //this.holder = this.scene.player.body;
 
-      this.body = scene.add.isoSprite(10, 16, 100);
-      this.body.setScale(2.5);
+      this.body = scene.add.isoSprite(-100, 200, 100);
+      this.body.setScale(1.3);
 
       // this.body.anims.timeScale = 0.5
       scene.isoPhysics.world.enable(this.body);
@@ -35,13 +35,14 @@ class Pizza extends Phaser.GameObjects.Sprite {
       //    this.body.body.velocity.z =  this.body.body.velocity.z / .05
       //  }
       if (this.holder) {
-       
          this.body.isoX = this.holder.isoX;
-      this.body.isoY = this.holder.isoY + 25;
-      this.body.isoZ = this.holder.isoZ +25;
+      this.body.isoY = this.holder.isoY +10;
+      this.body.isoZ = this.holder.isoZ +20;
+      this.body.body.enable = false;
       this.body.rotation = 30;
       }else{
         // console.log(this);
+       this.body.body.enable = true;
          this.body.rotation = 0;
       }
    }

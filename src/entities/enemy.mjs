@@ -1,3 +1,5 @@
+import create from '../utils/creates.mjs';
+
 class Gamer extends Phaser.GameObjects.Sprite {
    constructor(scene, x, y) {
       super(scene, x, y);
@@ -14,23 +16,22 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.speed = 1;
       this.facing = 'front';
 
-      this.shadow = scene.add.isoSprite(x, y, 1, 'gamer');
+      // this.shadow = scene.add.isoSprite(x, y, 1, 'gamer');
       this.body = scene.add.isoSprite(x, y, 1, 'gamer');
 
-      this.shadow
-         .setTintFill(0x000000)
-         .setSize(15, 35)
-         .setScale(2)
-         .setOrigin(0.5, 1)
-         .setAlpha(0.3)
-         .setAngle(-65);
-      this.shadow.scaleY = 1;
+      // this.shadow
+      //    .setTintFill(0x000000)
+      //    .setSize(15, 35)
+      //    .setOrigin(0.5, 1)
+      //    .setAlpha(0.3)
+      //    .setAngle(-65);
+      // this.shadow.scaleY = 1;
       // this.shadow.preFX.addBlur(1, 1, 1, 1, 0x000000);
-      const color = this.body.preFX.addColorMatrix()
+      const color = this.body.preFX.addColorMatrix();
       color.hue(Phaser.Math.Between(0, 360));
 
-      this.body.setSize(30, 60);
-      this.body.setScale(2).setOrigin(0.5, 1);
+      this.body.setSize(15, 30);
+      this.body.setOrigin(0.5, 1);
 
       //this.body.anims.timeScale = 0.5
       scene.isoPhysics.world.enable(this.body);
@@ -41,23 +42,92 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.body.body.drag.y = 200;
       //this.scene.physics.world.timeScale = 0.1
 
+      //menu
+      var items = [
+         {
+            name: 'Anti-Gravity Mode',
+            children: [{ name: 'ON' }, { name: 'OFF' }],
+         },
+         {
+            name: 'Explode Mode',
+            children: [{ name: 'BB-0' }, { name: 'BB-1' }, { name: 'BB-2' }],
+         },
+         {
+            name: 'CC',
+            children: [{ name: 'CC-0' }, { name: 'CC-1' }, { name: 'CC-2' }],
+         },
+      ];
+
+      this.menu = undefined;
+      this.body
+         .setInteractive()
+         .on('pointerup', () => {
+            if (this.scene.player.modeMode) {
+               if (this.menu === undefined) {
+                  this.menu = create.menu(
+                     this.scene,
+                     this.body.x,
+                     this.body.y,
+                     items,
+                     function (button) {
+                        console.log('Click ' + button.text + '\n');
+                     }
+                  );
+               } else {
+                  this.menu.collapse();
+                  this.menu = undefined;
+               }
+            }
+         })
+         .on('pointerover', () => {
+            if (this.scene.player.modeMode) {
+               this.scene.postFxPlugin.add(this.body, {
+                  thickness: 3,
+                  outlineColor: 0x15c7c3,
+               });
+            }
+         })
+         .on('pointerout', () => {
+            this.scene.postFxPlugin.remove(this.body);
+         });
+
+      // this.scene.input.on('pointerdown', function () {
+      //    // Remove all outline post-fx pipelines
+      //    if(this.menu){
+      //    if (!this.menu.isInTouching(pointer, this.body)) {
+      //       this.menu.collapse();
+      //       this.menu = undefined;
+      //    }
+      //    this.scene.postFxPlugin.remove(this);
+      // }
+      // })
    }
 
    update() {
-     if(this.scene.player.modeMode){
-       this.body.anims.timeScale = 0.05
-      this.speed = 0.05
-
-     }else{
-      this.body.anims.timeScale = 1
-     }
+      if (this.menu) {
+         this.menu.x = this.body.x;
+         this.menu.y = this.body.y;
+         if (!this.scene.player.modeMode) {
+            this.menu.collapse();
+            this.menu = undefined;
+            this.scene.postFxPlugin.remove(this.body);
+         }
+      }
+      if (this.scene.player.modeMode) {
+         this.body.anims.timeScale = 0.1;
+         this.speed = 0.1;
+      } else {
+         this.body.anims.timeScale = 1;
+      }
 
       if (this.hit) {
          this.hitAnimations();
-      } else{
+      } else {
          const distanceToPizza = this.scene.isoPhysics.distanceBetween(
             this.body,
-            this.scene.pizza.body
+            this.scene.pizza.holder
+               ? this.scene.pizza.holder
+               : this.scene.pizza.body
          );
          if (distanceToPizza <= 300) {
             this.pathFinding();
@@ -65,25 +135,25 @@ class Gamer extends Phaser.GameObjects.Sprite {
          if (distanceToPizza <= 200) {
             this.moveMethod = 'run';
             this.speed = 1.3;
-         }else{
+         } else {
             this.moveMethod = 'walk';
-            this.speed = .9; 
+            this.speed = 0.9;
          }
-   
+
          if (distanceToPizza <= 30 && !this.cooldown) {
-            if(this.scene.pizza.holder.name == 'player'){
-            this.hitPlayer();
+            if (this.scene.pizza.holder.name == 'player') {
+               this.hitPlayer();
             }
          }
          this.animations();
       }
 
-      this.shadow.isoX = this.body.isoX - 5;
-      this.shadow.isoY = this.body.isoY - 5;
-      this.shadow.isoZ = 0;
-      this.shadow.setScale(
-         (1000 - Math.sqrt(this.body.isoZ * this.body.isoZ)) * 0.001
-      );
+      // this.shadow.isoX = this.body.isoX - 5;
+      // this.shadow.isoY = this.body.isoY - 5;
+      // this.shadow.isoZ = 0;
+      // this.shadow.setScale(
+      //    (1000 - Math.sqrt(this.body.isoZ * this.body.isoZ)) * 0.001
+      // );
    }
    hitAnimations() {
       this.body.body.bounce.set(0, 0, 0.4);
@@ -194,24 +264,23 @@ class Gamer extends Phaser.GameObjects.Sprite {
    }
 
    pathFinding() {
-      if(this.scene.player.hit){
+      if (this.scene.player.hit) {
          this.moveMethod = 'walk';
-            this.speed = .5; 
-            
-            
-      }else{
-          this.scene.isoPhysics.moveToObjectXY(
-         this.body,
-         this.scene.pizza.body,
-         this.speed * 100
-      );
-      if (this.body.isoZ < 1) {
-         this.body.body.velocity.z = 0;
+         this.speed = this.speed * 0.5;
       } else {
-         this.body.body.velocity.z = -150;
+         this.scene.isoPhysics.moveToObjectXY(
+            this.body,
+            this.scene.pizza.holder
+               ? this.scene.pizza.holder
+               : this.scene.pizza.body,
+            this.speed * 50
+         );
+         if (this.body.isoZ < 1) {
+            this.body.body.velocity.z = 0;
+         } else {
+            this.body.body.velocity.z = -150;
+         }
       }
-      }
-     
    }
    hitPlayer() {
       this.cooldown = true;

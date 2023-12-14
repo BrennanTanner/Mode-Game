@@ -4,10 +4,15 @@ const preload = {};
 preload.images = (scene) => {
    // city tiles
    scene.load.image('city_sheet', '/images/tiles/cityTiles-250x190.png');
+   
    scene.load.tilemapTiledJSON('tilemap', '/json/maps/map1.tmj');
 };
 
 preload.sprites = (scene) => {
+   //buildings
+   scene.load.spritesheet('building_sheet', '/images/buildings/cityTiles_sheet.png', {frameWidth: 250,
+   frameHeight: 211,});
+
    //player
    scene.load.spritesheet('player', '/images/player/spritesheet-guy.png', {
       frameWidth: 33,

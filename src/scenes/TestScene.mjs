@@ -1,4 +1,6 @@
 import IsoPlugin, { IsoPhysics } from '../Iso-plugin/IsoPlugin';
+import ScalinePostFX from '../pipelines/ScalinePostFX';
+
 import preload from '../utils/preloads.mjs';
 import create from '../utils/creates.mjs';
 import Gamer from '../entities/enemy.mjs';
@@ -18,6 +20,7 @@ class TestScene extends Phaser.Scene {
       this.pizza;
       this.platforms;
       this.cursors;
+      this.keys;
    }
 
    preload() {
@@ -34,6 +37,9 @@ class TestScene extends Phaser.Scene {
          sceneKey: 'isoPhysics',
       });
 
+      this.load.plugin('rexoutlinepipelineplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexoutlinepipelineplugin.min.js', true);
+      
+
       //get canvas
       this.canvas = this.sys.game.canvas;
 
@@ -44,6 +50,9 @@ class TestScene extends Phaser.Scene {
       this.load.crossOrigin = 'anonymous';
 
       this.load.image('ground', '/images/test/cube.png');
+
+//       var menu = new Menu(this, config);
+// this.add.existing(menu)
    }
 
    create() {
@@ -52,14 +61,19 @@ class TestScene extends Phaser.Scene {
       this.isoPhysics.world.gravity.setTo(0, 0, -500);
       this.isoPhysics.projector.origin.setTo(0.5, 0.3);
       this.graphics = this.add.graphics({ x: 0, y: 0 });
+      
+      this.postFxPlugin = this.plugins.get('rexoutlinepipelineplugin');
 
+      this.buildings = this.add.group();
+      create.buildings(this);
       create.player(this);
       create.pizza(this);
       this.platforms = this.add.group();
-      
+  
+
       this.gamers = this.add.group({
          classType: Gamer,
-         maxSize: 200,
+         maxSize: 20,
          runChildUpdate: true,
       });
       this.hits = this.add.group({
@@ -76,98 +90,119 @@ class TestScene extends Phaser.Scene {
 
       this.cars.create(256, 256, 100);
 
-      for (let i = 0; i < 2; i++) {
-         this.gamers.create(50 * i, 50 * i);
+
+      for (let i = 0; i < 10; i++) {
+         this.gamers.create(200, 50 * i);
       }
 
-      // this.gamers.create(250, 250)
-      //new Gamer(this, 250, 250)
-      for (let i = 0; i < 3; i++) {
-         const cube = this.add.isoSprite(50 * i, 250, 0, 'ground');
-         this.platforms.add(cube);
-        this.isoPhysics.world.enable(cube);
-         cube.body.collideWorldBounds = true;
-         cube.body.bounce.set(0, 0, 0);
-         cube.body.name="cube"
-      }
+     
+         // const cube = this.add.isoSprite(150, 250, 0, 'ground');
+         // this.platforms.add(cube);
+         // cube.setScale(0.5);
+         // this.isoPhysics.world.enable(cube);
+         // cube.body.collideWorldBounds = true;
+         // cube.body.bounce.set(0, 0, 0);
+         // cube.body.name = 'cube';
+         // console.log(cube);
+   
+
+         // menu end
+
+
 
       this.cursors = this.input.keyboard.createCursorKeys();
-      this.spaceKey = this.input.keyboard.addKey(
-         Phaser.Input.Keyboard.KeyCodes.SPACE
-      );
-      this.EKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-      this.WKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-      this.AKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-      this.SKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-      this.DKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+      this.keys = {
+         EKey: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E),
+         QKey: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q),
+         WKey: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+         AKey: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+         SKey: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+         DKey: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+         spaceKey: this.input.keyboard.addKey(
+            Phaser.Input.Keyboard.KeyCodes.SPACE
+         ),
+      };
       const camera = this.cameras.main;
+      camera.setZoom(.5);
 
-      camera.postFX.addTiltShift(0.3, 1.0, 0, 0.5, 1);
+   
+     // camera.postFX.addTiltShift(0.3, 1.0, 0, 0.5, 1);
+    
    }
 
    update() {
+      this.isoPhysics.world.collide(this.buildings, this.player.body);
+      this.isoPhysics.world.collide(this.buildings, this.pizza.body);
+
+      this.isoPhysics.world.collide(this.buildings, this.gamers);
+
+      //console.log(this.buildings)
+      this.buildings.children.each((building) => {
+         this;
+         building.update(this);
+      });
       this.isoPhysics.world.collide(this.platforms, this.player.body);
       this.isoPhysics.world.collide(this.platforms, this.pizza.body);
-      this.isoPhysics.world.collide(this.player.body, this.pizza.body, this.changeHolder.bind(this));
+      this.isoPhysics.world.collide(
+         this.pizza.body,
+         this.player.body,
+         this.changeHolder.bind(this)
+      );
 
       //cars
-      this.cars.children.each((car) => {
-         this.isoPhysics.world.collide( this.platforms, car.body);
-      });
-      this.cars.children.each((car) => {
-         this.isoPhysics.world.collide(car.body, this.player.body);
-      });
 
-      this.cars.children.each((car) => {
-         this.isoPhysics.world.collide(
-            car.body,
-            this.pizza.body,
-             this.changeHolder.bind(this)
-         );
-      });
+      this.isoPhysics.world.collide(this.platforms, this.cars);
 
-   
+      this.isoPhysics.world.collide(this.cars, this.player.body);
+
+      this.isoPhysics.world.collide(this.cars, this.buildings);
+
+      this.isoPhysics.world.collide(
+         this.cars,
+         this.pizza.body,
+      );
+
       //gamers
-      this.isoPhysics.world.collide(this.gamers)
-      this.isoPhysics.world.collide(this.platforms)
+      this.isoPhysics.world.collide(this.gamers);
+      this.isoPhysics.world.collide(this.platforms);
 
-      this.gamers.children.each((gamer) => {
-         this.isoPhysics.world.collide( this.platforms, gamer.body);
-      });
-      this.gamers.children.each((gamer) => {
-         this.isoPhysics.world.collide(gamer.body, this.player.body);
-      });
+      this.isoPhysics.world.collide(this.cars, this.gamers);
 
-      this.gamers.children.each((gamer) => {
-         this.isoPhysics.world.collide(
-            gamer.body,
-            this.pizza.body,
-             this.changeHolder.bind(this)
-         );
-      });
+      this.isoPhysics.world.collide(this.platforms, this.gamers);
+
+      this.isoPhysics.world.collide(this.gamers, this.player.body);
+
+      this.isoPhysics.world.collide(
+         this.gamers,
+         this.pizza.body,
+         this.changeHolder,
+         null,
+         this
+      );
+
       //hits
       this.hits.children.each((hit) => {
          this.isoPhysics.world.collide(
             hit.body,
             this.player.body,
-            this.hitPlayer.bind(this),null,this
-           
+            this.hitPlayer,
+            null,
+            this
          );
       });
       this.player.update(this);
       this.pizza.update(this);
    }
 
-    hitPlayer(hit) {
+   hitPlayer(hit) {
       this.player.hit = true;
       this.pizza.holder = false;
       hit.hasHit = true;
    }
 
-   changeHolder(grabber, pizza) {
-
-     this.pizza.holder = grabber;
-  }
+   changeHolder(pizza, grabber) {
+      this.pizza.holder = grabber;
+   }
 
    loadingBar() {
       var progressBar = this.add.graphics();
