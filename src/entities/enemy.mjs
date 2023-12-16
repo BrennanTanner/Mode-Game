@@ -16,17 +16,10 @@ class Gamer extends Phaser.GameObjects.Sprite {
       this.speed = 1;
       this.facing = 'front';
 
-      // this.shadow = scene.add.isoSprite(x, y, 1, 'gamer');
+      this.sprite = 'gamer';
       this.body = scene.add.isoSprite(x, y, 1, 'gamer');
 
-      // this.shadow
-      //    .setTintFill(0x000000)
-      //    .setSize(15, 35)
-      //    .setOrigin(0.5, 1)
-      //    .setAlpha(0.3)
-      //    .setAngle(-65);
-      // this.shadow.scaleY = 1;
-      // this.shadow.preFX.addBlur(1, 1, 1, 1, 0x000000);
+      this.body.holdingPizza = false;
       const color = this.body.preFX.addColorMatrix();
       color.hue(Phaser.Math.Between(0, 360));
 
@@ -37,24 +30,21 @@ class Gamer extends Phaser.GameObjects.Sprite {
       scene.isoPhysics.world.enable(this.body);
       this.body.body.collideWorldBounds = true;
       this.body.body.bounce.set(1, 1, 0.2);
-      this.body.anims.play('gamer-idle-front', true);
-      this.body.body.drag.x = 200;
-      this.body.body.drag.y = 200;
-      //this.scene.physics.world.timeScale = 0.1
+      this.body.anims.play(`${this.sprite}-idle-front`, true);
+      this.body.body.maxVelocity.set(500, 500, 500);
 
+      this.body.name = 'gamer';
+      //this.scene.physics.world.timeScale = 0.1
       //menu
-      var items = [
+      this.items = [
          {
-            name: 'Anti-Gravity Mode',
-            children: [{ name: 'ON' }, { name: 'OFF' }],
+            name: 'Gravity: On',
          },
          {
-            name: 'Explode Mode',
-            children: [{ name: 'BB-0' }, { name: 'BB-1' }, { name: 'BB-2' }],
+            name: 'Big Mode: Off',
          },
          {
-            name: 'CC',
-            children: [{ name: 'CC-0' }, { name: 'CC-1' }, { name: 'CC-2' }],
+            name: 'Car Mode: Off',
          },
       ];
 
@@ -68,13 +58,80 @@ class Gamer extends Phaser.GameObjects.Sprite {
                      this.scene,
                      this.body.x,
                      this.body.y,
-                     items,
+                     this.items,
                      function (button) {
-                        console.log('Click ' + button.text + '\n');
-                     }
+                        switch (button.text) {
+                           case 'Gravity: Off':
+                              this.body.body.velocity.z =
+                                 this.body.body.velocity.z + 2;
+                              this.body.body.allowGravity =
+                                 !this.body.body.allowGravity;
+
+                              this.body.holdingPizza = false;
+
+                              this.menu.children[0].children[2].setText(
+                                 'Gravity: On'
+                              );
+                              this.items[0].name = 'Gravity: On';
+                              break;
+                           case 'Gravity: On':
+                              this.body.body.velocity.z =
+                                 this.body.body.velocity.z + 2;
+                              this.body.body.allowGravity =
+                                 !this.body.body.allowGravity;
+                              this.menu.children[0].children[2].setText(
+                                 'Gravity: Off'
+                              );
+                              this.items[0].name = 'Gravity: Off';
+                              break;
+                           case 'Big Mode: Off':
+                              this.body.setSize(45, 90);
+
+                              this.body.setScale(3);
+                              //this.body.body.velocity.z = 0;
+
+                              this.menu.children[1].children[2].setText(
+                                 'Big Mode: On'
+                              );
+                              this.items[1].name = 'Big Mode: On';
+                              break;
+
+                           case 'Big Mode: On':
+                              this.body.setSize(15, 30);
+
+                              this.body.setScale(1);
+                              //this.body.body.velocity.z = 0;
+                              this.menu.children[1].children[2].setText(
+                                 'Big Mode: Off'
+                              );
+                              this.items[1].name = 'Big Mode: Off';
+                              break;
+
+                           case 'Car Mode: Off':
+                              this.sprite = 'car';
+                                 
+                              this.menu.children[2].children[2].setText(
+                                 'Car Mode: On'
+                              );
+                              this.items[2].name = 'Car Mode: On';
+                              break;
+
+                           case 'Car Mode: On':
+                              this.sprite = 'gamer';
+                              this.menu.children[2].children[2].setText(
+                                 'Car Mode: Off'
+                              );
+                              this.items[2].name = 'Car Mode: Off';
+                              break;
+                           default:
+                              break;
+                        }
+                     }.bind(this)
                   );
                } else {
-                  this.menu.collapse();
+                  if (this.menu.scene) {
+                     this.menu.collapse();
+                  }
                   this.menu = undefined;
                }
             }
@@ -83,77 +140,90 @@ class Gamer extends Phaser.GameObjects.Sprite {
             if (this.scene.player.modeMode) {
                this.scene.postFxPlugin.add(this.body, {
                   thickness: 3,
-                  outlineColor: 0x15c7c3,
+                  outlineColor: 0xfe5f03,
                });
             }
          })
          .on('pointerout', () => {
             this.scene.postFxPlugin.remove(this.body);
          });
-
-      // this.scene.input.on('pointerdown', function () {
-      //    // Remove all outline post-fx pipelines
-      //    if(this.menu){
-      //    if (!this.menu.isInTouching(pointer, this.body)) {
-      //       this.menu.collapse();
-      //       this.menu = undefined;
-      //    }
-      //    this.scene.postFxPlugin.remove(this);
-      // }
-      // })
    }
 
    update() {
-      if (this.menu) {
-         this.menu.x = this.body.x;
-         this.menu.y = this.body.y;
-         if (!this.scene.player.modeMode) {
-            this.menu.collapse();
-            this.menu = undefined;
-            this.scene.postFxPlugin.remove(this.body);
-         }
-      }
-      if (this.scene.player.modeMode) {
-         this.body.anims.timeScale = 0.1;
-         this.speed = 0.1;
+      const distance = this.scene.isoPhysics.distanceBetween(
+         this.body,
+         this.scene.player.body
+      );
+      if (distance > 550) {
+         this.body.enable = false;
+         this.setVisible(false);
       } else {
-         this.body.anims.timeScale = 1;
-      }
-
-      if (this.hit) {
-         this.hitAnimations();
-      } else {
-         const distanceToPizza = this.scene.isoPhysics.distanceBetween(
-            this.body,
-            this.scene.pizza.holder
-               ? this.scene.pizza.holder
-               : this.scene.pizza.body
-         );
-         if (distanceToPizza <= 300) {
-            this.pathFinding();
-         }
-         if (distanceToPizza <= 200) {
-            this.moveMethod = 'run';
-            this.speed = 1.3;
-         } else {
-            this.moveMethod = 'walk';
-            this.speed = 0.9;
-         }
-
-         if (distanceToPizza <= 30 && !this.cooldown) {
-            if (this.scene.pizza.holder.name == 'player') {
-               this.hitPlayer();
+         this.body.enable = true;
+         this.setVisible(true);
+         if (this.menu) {
+            this.menu.x = this.body.x;
+            this.menu.y = this.body.y;
+            if (!this.scene.player.modeMode) {
+               if (this.menu.scene) {
+                  this.menu.collapse();
+               }
+               this.menu = undefined;
+               this.scene.postFxPlugin.remove(this.body);
             }
          }
-         this.animations();
-      }
+         if (this.scene.player.modeMode) {
+            this.body.anims.timeScale = 0.1;
+            this.speed = 0.1;
+         } else {
+            this.body.anims.timeScale = 1;
+         }
 
-      // this.shadow.isoX = this.body.isoX - 5;
-      // this.shadow.isoY = this.body.isoY - 5;
-      // this.shadow.isoZ = 0;
-      // this.shadow.setScale(
-      //    (1000 - Math.sqrt(this.body.isoZ * this.body.isoZ)) * 0.001
-      // );
+         if (this.hit) {
+            this.hitAnimations();
+         } else {
+            const distanceToPizza = this.scene.isoPhysics.distanceBetween(
+               this.body,
+               this.scene.pizza.holder
+                  ? this.scene.pizza.holder
+                  : this.scene.pizza.body
+            );
+
+            if (this.body.body.blocked.down && this.body.body.allowGravity) {
+               if (distanceToPizza <= 300) {
+                  this.pathFinding();
+               } else {
+                  if (
+                     this.body.body.velocity.x == 0 &&
+                     this.body.body.velocity.y == 0
+                  ) {
+                     const sp = Phaser.Math.Between(10, 50);
+                     const left = Phaser.Math.Between(0, 1);
+                     this.body.body.velocity.x =
+                        left == 1 ? this.speed * sp : 0;
+                     this.body.body.velocity.y =
+                        left == 1 ? 0 : this.speed * sp;
+                  }
+               }
+               if (distanceToPizza <= 200) {
+                  this.moveMethod = 'run';
+                  this.speed = 1.3;
+               } else {
+                  this.moveMethod = 'walk';
+                  this.speed = 0.9;
+               }
+
+               if (distanceToPizza <= 30 && !this.cooldown) {
+                  if (this.scene.pizza.holder.name == 'player') {
+                     this.hitPlayer();
+                  }
+               }
+            } else if (this.body.body.blocked.up) {
+               this.destroy();
+               return;
+            }
+            this.animations();
+         }
+      }
    }
    hitAnimations() {
       this.body.body.bounce.set(0, 0, 0.4);
@@ -167,7 +237,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
             },
             callbackScope: this.scene,
          });
-         this.body.anims.play(`gamer-flip`, true);
+         this.body.anims.play(`${this.sprite}-flip`, true);
       } else {
          if ((vel.x < 0 && vel.y >= 0) || (vel.x < 0 && vel.y < 0)) {
             this.facing = 'front';
@@ -188,9 +258,17 @@ class Gamer extends Phaser.GameObjects.Sprite {
       //this.shadow.anims.play(this.body.anims.currentAnim.key, true);
 
       if (angle > 45 || angle < -135) {
-         this.body.setFlipX(true);
+         if (this.sprite == 'gamer') {
+            this.body.setFlipX(true);
+         } else {
+            this.body.setFlipX(false);
+         }
       } else if (angle <= 45 && angle >= -135) {
-         this.body.setFlipX(false);
+         if (this.sprite == 'gamer') {
+            this.body.setFlipX(false);
+         } else {
+            this.body.setFlipX(true);
+         }
       }
       //idle
       if (
@@ -199,7 +277,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
          vel.z < 10 &&
          vel.z > -10
       ) {
-         this.body.anims.play(`gamer-idle-${this.facing}`, true);
+         this.body.anims.play(`${this.sprite}-idle-${this.facing}`, true);
       }
       //down-left or down-right
       else if (
@@ -207,15 +285,20 @@ class Gamer extends Phaser.GameObjects.Sprite {
          (angle < 22.5 && angle >= 0) ||
          (angle >= -45 && angle < 0)
       ) {
-         if (vel.z > 10) {
+         if (!this.body.body.allowGravity) {
+            this.body.anims.play(`${this.sprite}-flip-front`, true);
+         } else if (vel.z > 2) {
             this.facing = 'front';
-            this.body.anims.play('gamer-up-front', true);
-         } else if (vel.z < -10) {
+            this.body.anims.play(`${this.sprite}-up-front`, true);
+         } else if (vel.z < -5) {
             this.facing = 'front';
-            this.body.anims.play('gamer-down-front', true);
+            this.body.anims.play(`${this.sprite}-down-front`, true);
          } else {
             this.facing = 'front';
-            this.body.anims.play(`gamer-${this.moveMethod}-front`, true);
+            this.body.anims.play(
+               `${this.sprite}-${this.moveMethod}-front`,
+               true
+            );
          }
       }
       //up-left or up-right
@@ -224,72 +307,93 @@ class Gamer extends Phaser.GameObjects.Sprite {
          angle > 135 ||
          (angle > -112.5 && angle < -45)
       ) {
-         if (vel.z > 10) {
+         if (!this.body.body.allowGravity) {
+            this.body.anims.play(`${this.sprite}-flip-rear`, true);
+         } else if (vel.z > 2) {
             this.facing = 'rear';
-            this.body.anims.play('gamer-up-rear', true);
-         } else if (vel.z < -10) {
+            this.body.anims.play(`${this.sprite}-up-rear`, true);
+         } else if (vel.z < -5) {
             this.facing = 'rear';
-            this.body.anims.play('gamer-down-rear', true);
+            this.body.anims.play(`${this.sprite}-down-rear`, true);
          } else {
             this.facing = 'rear';
-            this.body.anims.play(`gamer-${this.moveMethod}-rear`, true);
+            this.body.anims.play(
+               `${this.sprite}-${this.moveMethod}-rear`,
+               true
+            );
          }
       }
       //up
       else if (angle < -112.5 && angle > -157.5) {
-         if (vel.z > 10) {
+         if (!this.body.body.allowGravity) {
+            this.body.anims.play(`${this.sprite}-flip-rear`, true);
+         } else if (vel.z > 2) {
             this.facing = 'rear';
-            this.body.anims.play('gamer-up-rear', true);
-         } else if (vel.z < -10) {
+            this.body.anims.play(`${this.sprite}-up-rear`, true);
+         } else if (vel.z < -5) {
             this.facing = 'rear';
-            this.body.anims.play('gamer-down-rear', true);
+            this.body.anims.play(`${this.sprite}-down-rear`, true);
          } else {
             this.facing = 'rear';
-            this.body.anims.play(`gamer-${this.moveMethod}-up`, true);
+            this.body.anims.play(`${this.sprite}-${this.moveMethod}-up`, true);
          }
       }
       //down
       else if (angle < 67.5 && angle > 22.5) {
-         if (vel.z > 10) {
+         if (!this.body.body.allowGravity) {
+            this.body.anims.play(`${this.sprite}-flip-front`, true);
+         } else if (vel.z > 2) {
             this.facing = 'front';
-            this.body.anims.play('gamer-up-front', true);
-         } else if (vel.z < -10) {
+            this.body.anims.play(`${this.sprite}-up-front`, true);
+         } else if (vel.z < -5) {
             this.facing = 'front';
-            this.body.anims.play('gamer-down-front', true);
+            this.body.anims.play(`${this.sprite}-down-front`, true);
          } else {
             this.facing = 'front';
-            this.body.anims.play(`gamer-${this.moveMethod}-down`, true);
+            this.body.anims.play(
+               `${this.sprite}-${this.moveMethod}-down`,
+               true
+            );
          }
       }
    }
 
    pathFinding() {
-      if (this.scene.player.hit) {
-         this.moveMethod = 'walk';
-         this.speed = this.speed * 0.5;
-      } else {
-         this.scene.isoPhysics.moveToObjectXY(
-            this.body,
-            this.scene.pizza.holder
-               ? this.scene.pizza.holder
-               : this.scene.pizza.body,
-            this.speed * 50
-         );
-         if (this.body.isoZ < 1) {
-            this.body.body.velocity.z = 0;
+      // console.log(this.body.body.touching)
+      if (this.body.body.z < 1)
+         if (this.scene.player.hit) {
+            this.moveMethod = 'walk';
+            this.speed = this.speed * 0.5;
          } else {
-            this.body.body.velocity.z = -150;
+            if(this.body.holdingPizza){
+               this.scene.isoPhysics.moveToObjectXY(
+                  this.body,
+                  this.scene.player.body,
+                  -this.speed * 50
+               );
+            }else{
+            this.scene.isoPhysics.moveToObjectXY(
+               this.body,
+               this.scene.pizza.holder
+                  ? this.scene.pizza.holder
+                  : this.scene.pizza.body,
+               this.speed * 50
+            );
+            }
+            // if (this.body.isoZ < 1) {
+            //    this.body.body.velocity.z = 0;
+            // } else {
+            //    this.body.body.velocity.z = -150;
+            // }
          }
-      }
    }
    hitPlayer() {
+      console.log(this);
       this.cooldown = true;
-      this.scene.hits.create(
-         this.body.isoX,
-         this.body.isoY,
-         this.body.isoZ,
-         this.facing
-      );
+      this.scene.hits.create(this.body.isoX, this.body.isoY, this.body.isoZ, {
+         facing: this.facing,
+         scale: this.body.scale,
+      });
 
       this.scene.time.addEvent({
          delay: this.cooldownTime,

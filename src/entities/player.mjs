@@ -1,3 +1,5 @@
+import create from '../utils/creates.mjs';
+
 class Player extends Phaser.GameObjects.Sprite {
    constructor(scene) {
       super(scene);
@@ -12,9 +14,15 @@ class Player extends Phaser.GameObjects.Sprite {
       this.slowMotion = 0.05;
       this.drive = false;
       this.car = null;
+      this.jumps = 1;
+      this.maxJumps = 1;
+      this.menu = false;
+      
 
-      this.shadow = scene.add.isoSprite(256, 256, 100, 'player');
-      this.body = scene.add.isoSprite(256, 256, 100, 'player');
+      this.shadow = scene.add.isoSprite(0, 0, 0, 'player');
+      this.body = scene.add.isoSprite(-200, 90, 0, 'player');
+
+      this.body.holdingPizza = false;
 
       this.shadow
          .setTintFill(0x000000)
@@ -23,9 +31,8 @@ class Player extends Phaser.GameObjects.Sprite {
          .setAlpha(0.3)
          .setAngle(-60);
 
-         this.shadow.scaleY = 0.1;
+      this.shadow.scaleY = 0.1;
       scene.cameras.main.startFollow(this.body);
-      
 
       this.body.setOrigin(0.5, 1).setSize(30, 60);
 
@@ -37,19 +44,141 @@ class Player extends Phaser.GameObjects.Sprite {
       this.body.name = 'player';
       this.body.anims.play('idle-front', true);
       //console.log(this.body);
+
+        //this.scene.physics.world.timeScale = 0.1
+      //menu
+      this.items = [
+         {
+            name: 'Double Jump: Off',
+         },
+         {
+            name: 'Big Mode: Off'
+         },
+      ];
+
+      this.menu = undefined;
+      this.body
+         .setInteractive()
+         .on('pointerup', () => {
+            if (this.scene.player.modeMode) {
+               if (this.menu === undefined) {
+                  this.menu = create.menu(
+                     this.scene,
+                     this.body.x,
+                     this.body.y,
+                     this.items,
+                     function (button) {
+                        switch (button.text) {
+                           case 'Double Jump: Off':
+                              this.maxJumps = 2;
+                              this.menu.children[0].children[2].setText(
+                                 'Double Jump: On'
+                              );
+                              this.items[0].name = 'Double Jump: On';
+                              break;
+                           case 'Double Jump: On':
+                              this.maxJumps = 1;
+                              this.menu.children[0].children[2].setText(
+                                 'Double Jump: Off'
+                              );
+                              this.items[0].name = 'Double Jump: Off';
+                              break;
+                           case 'Big Mode: Off':
+                              this.body.setSize(45, 90);
+                              
+                              this.body.setScale(3);
+                              //this.body.body.velocity.z = 0;
+                              
+                              this.menu.children[1].children[2].setText(
+                                 'Big Mode: On'
+                              );
+                              this.items[1].name = 'Big Mode: On';
+                              break;
+
+                           case 'Big Mode: On':
+                              
+                              this.body.setSize(15, 30);
+                              
+                              this.body.setScale(1);
+                              //this.body.body.velocity.z = 0;
+                              this.menu.children[1].children[2].setText(
+                                 'Big Mode: Off'
+                              );
+                              this.items[1].name = 'Big Mode: Off';
+                              break;
+
+                           case 'Car Mode: Off':
+                              this.sprite = 'car';
+                              
+                              this.menu.children[2].children[2].setText(
+                                 'Car Mode: On'
+                              );
+                              this.items[2].name = 'Car Mode: On';
+                              break;
+
+                           case 'Car Mode: On':
+                              this.sprite = 'gamer';
+                              this.menu.children[2].children[2].setText(
+                                 'Car Mode: Off'
+                              );
+                              this.items[2].name = 'Car Mode: Off';
+                              break;
+                           default:
+                              break;
+                        }
+                     }.bind(this)
+                  );
+               } else {
+                  if (this.menu.scene) {
+                     this.menu.collapse();
+                  }
+                  this.menu = undefined;
+               }
+            }
+         })
+         .on('pointerover', () => {
+            if (this.scene.player.modeMode) {
+               this.scene.postFxPlugin.add(this.body, {
+                  thickness: 3,
+                  outlineColor: 0x15c7c3,
+               });
+            }
+         })
+         .on('pointerout', () => {
+            this.scene.postFxPlugin.remove(this.body);
+         });
+        
    }
 
    update() {
+      
+      
       if (this.drive) {
          this.body.isoX = this.car.body.isoX;
          this.body.isoY = this.car.body.isoY;
          this.body.isoZ = this.car.body.isoZ;
          this.driveControls();
       } else {
+         if (this.menu) {
+            this.menu.x = this.body.x;
+            this.menu.y = this.body.y;
+            if (!this.scene.player.modeMode) {
+               if (this.menu.scene) {
+                  this.menu.collapse();
+               }
+               this.menu = undefined;
+               this.scene.postFxPlugin.remove(this.body);
+            }
+         }
+         if ((this.body.body.blocked.down || this.body.body.touching.down) && this.jumps < this.maxJumps){
+            this.jumps++;
+         }
          if (Phaser.Input.Keyboard.JustDown(this.scene.keys.QKey)) {
             // this.scene.physics.world.timeScale = 0.5;
             // this.scene.time.timeScale = 0.5;
+         
             if (this.modeMode) {
+               this.scene.music.rate = 1
                //this.scene.shader.active=false;
                this.scene.isoPhysics.world.bodies.entries.map((body) => {
                   body.velocity.x = body.velocity.x / 0.05;
@@ -58,7 +187,8 @@ class Player extends Phaser.GameObjects.Sprite {
                });
                this.scene.isoPhysics.world.gravity.z = -500;
             } else {
-              // this.scene.shader.active=true;
+               this.scene.music.rate = .5
+               // this.scene.shader.active=true;
                this.scene.isoPhysics.world.bodies.entries.map((body) => {
                   body.velocity.x = body.velocity.x * 0.05;
                   body.velocity.y = body.velocity.y * 0.05;
@@ -287,44 +417,43 @@ class Player extends Phaser.GameObjects.Sprite {
          this.body.body.velocity.y = 75;
       }
 
-      if (Phaser.Input.Keyboard.JustDown(this.scene.keys.spaceKey)) {
+      if (Phaser.Input.Keyboard.JustDown(this.scene.keys.spaceKey)&& this.jumps > 0) {
          this.body.body.velocity.z = 250;
-        
+         this.jumps--;
       }
    }
    driveControls() {
-      if (Phaser.Input.Keyboard.JustDown(this.scene.keys.EKey)) {
+      if (Phaser.Input.Keyboard.JustDown(this.scene.keys.EKey) ) {
          const closestCar = this.scene.isoPhysics.closestBody(
             this.body,
             this.scene.cars.children.entries
          );
          if (this.drive) {
-            this.body.isoX = this.body.isoX +100;
-            this.body.isoY = this.body.isoY+100;
+            this.body.isoX = this.body.isoX + 100;
+            this.body.isoY = this.body.isoY + 100;
 
-            
-            this.body.body.enable = true;
+            closestCar.body.enable = true;
             this.body.setVisible(true);
             this.shadow.setVisible(true);
             this.drive = false;
             closestCar.drive = false;
             this.car = null;
-            if(this.scene.pizza.holder.name == 'car'){
-               this.scene.pizza.holder = this.body
+            if (this.scene.pizza.holder.name == 'car') {
+               this.scene.pizza.holder = this.body;
             }
          }
          if (
             this.scene.isoPhysics.distanceBetween(this.body, closestCar.body) <=
             60
          ) {
-            this.body.body.enable = false;
+            closestCar.body.enable = false;
             this.body.setVisible(false);
             this.shadow.setVisible(false);
             this.drive = true;
             closestCar.drive = true;
             this.car = closestCar;
-            if(this.scene.pizza.holder.name == 'player'){
-               this.scene.pizza.holder = this.car
+            if (this.scene.pizza.holder.name == 'player') {
+               this.scene.pizza.holder = this.car.body;
             }
          }
       }

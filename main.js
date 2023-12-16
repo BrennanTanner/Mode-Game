@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import TestScene from './src/scenes/TestScene.mjs';
 import UIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
-import ScalinePostFX from './src/pipelines/ScalinePostFX';
 
 const screenHeight = screen.availHeight - 200;
 const screenWidth = screen.availWidth;
@@ -16,7 +15,6 @@ var config = {
    physics: {
     default: "arcade",
   },
-  pipeline: { ScalinePostFX },
   plugins: {
         scene: [{
             key: 'rexUI',

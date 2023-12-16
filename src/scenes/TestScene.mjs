@@ -1,6 +1,4 @@
 import IsoPlugin, { IsoPhysics } from '../Iso-plugin/IsoPlugin';
-import ScalinePostFX from '../pipelines/ScalinePostFX';
-
 import preload from '../utils/preloads.mjs';
 import create from '../utils/creates.mjs';
 import Gamer from '../entities/enemy.mjs';
@@ -37,8 +35,11 @@ class TestScene extends Phaser.Scene {
          sceneKey: 'isoPhysics',
       });
 
-      this.load.plugin('rexoutlinepipelineplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexoutlinepipelineplugin.min.js', true);
-      
+      this.load.plugin(
+         'rexoutlinepipelineplugin',
+         'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexoutlinepipelineplugin.min.js',
+         true
+      );
 
       //get canvas
       this.canvas = this.sys.game.canvas;
@@ -46,30 +47,56 @@ class TestScene extends Phaser.Scene {
       // load tiles
       preload.images(this);
       preload.sprites(this);
+      preload.audio(this);
 
       this.load.crossOrigin = 'anonymous';
 
       this.load.image('ground', '/images/test/cube.png');
 
-//       var menu = new Menu(this, config);
-// this.add.existing(menu)
+      this.pizzasDelivered = 0;
+      //       var menu = new Menu(this, config);
+      // this.add.existing(menu)
    }
 
    create() {
+      create.audio(this);
+      
+      this.music.play();
+
       create.map(this);
       create.animations(this);
       this.isoPhysics.world.gravity.setTo(0, 0, -500);
       this.isoPhysics.projector.origin.setTo(0.5, 0.3);
       this.graphics = this.add.graphics({ x: 0, y: 0 });
-      
+
       this.postFxPlugin = this.plugins.get('rexoutlinepipelineplugin');
 
       this.buildings = this.add.group();
       create.buildings(this);
       create.player(this);
       create.pizza(this);
+      create.arrow(this);
+      create.patron(this, -300, 980, 0);
+      
+
+      this.scorebg= this.rexUI.add.roundRectangle(310, 166, 180, 20, 10, 0x80101313).setScrollFactor(0)
+
+      this.score = this.add
+         .text(230, 160, `Pizzas Delivered: ${this.pizzasDelivered}`, {
+            fontSize: '10px',
+         })
+         .setResolution(3).setScrollFactor(0);
+         this.scorebg.depth = 5000;
+         this.score.depth = 5001;
+         this.tip = this.add
+         .text(230, 420, `press Q to use Mode gun`, {
+            fontSize: '10px',
+         })
+         .setResolution(3).setScrollFactor(0);
+         this.tip.depth = 8000;
+         this.scorebg.depth = 5000;
+         this.score.depth = 5001;
       this.platforms = this.add.group();
-  
 
       this.gamers = this.add.group({
          classType: Gamer,
@@ -88,27 +115,11 @@ class TestScene extends Phaser.Scene {
          runChildUpdate: true,
       });
 
-      this.cars.create(256, 256, 100);
+      //this.cars.create(256, 256, 100);
 
-
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 100; i++) {
          this.gamers.create(200, 50 * i);
       }
-
-     
-         // const cube = this.add.isoSprite(150, 250, 0, 'ground');
-         // this.platforms.add(cube);
-         // cube.setScale(0.5);
-         // this.isoPhysics.world.enable(cube);
-         // cube.body.collideWorldBounds = true;
-         // cube.body.bounce.set(0, 0, 0);
-         // cube.body.name = 'cube';
-         // console.log(cube);
-   
-
-         // menu end
-
-
 
       this.cursors = this.input.keyboard.createCursorKeys();
       this.keys = {
@@ -123,11 +134,9 @@ class TestScene extends Phaser.Scene {
          ),
       };
       const camera = this.cameras.main;
-      camera.setZoom(.5);
+      camera.setZoom(2);
 
-   
-     // camera.postFX.addTiltShift(0.3, 1.0, 0, 0.5, 1);
-    
+      //camera.postFX.addTiltShift(0.3, 1.0, 0, 0.5, 1);
    }
 
    update() {
@@ -157,10 +166,7 @@ class TestScene extends Phaser.Scene {
 
       this.isoPhysics.world.collide(this.cars, this.buildings);
 
-      this.isoPhysics.world.collide(
-         this.cars,
-         this.pizza.body,
-      );
+      this.isoPhysics.world.collide(this.cars, this.pizza.body);
 
       //gamers
       this.isoPhysics.world.collide(this.gamers);
@@ -180,6 +186,14 @@ class TestScene extends Phaser.Scene {
          this
       );
 
+      this.isoPhysics.world.collide(
+         this.patron.body,
+         this.pizza.body,
+         this.deliverPizza,
+         null,
+         this
+      );
+
       //hits
       this.hits.children.each((hit) => {
          this.isoPhysics.world.collide(
@@ -192,16 +206,48 @@ class TestScene extends Phaser.Scene {
       });
       this.player.update(this);
       this.pizza.update(this);
+      this.arrow.update(this);
+      this.patron.update(this);
    }
 
    hitPlayer(hit) {
       this.player.hit = true;
-      this.pizza.holder = false;
+      if (this.pizza.holder.name == 'player') {
+         this.pizza.holder = false;
+      }
+
+      
       hit.hasHit = true;
+      this.hitSound.play({ volume: 3});
    }
 
    changeHolder(pizza, grabber) {
+      if (this.pizza.holder) {
+         this.pizza.holder.holdingPizza = false;
+      }
+
       this.pizza.holder = grabber;
+      grabber.holdingPizza = true;
+   }
+
+   deliverPizza(patron, pizza) {
+      patron.body.x = Phaser.Math.Between(
+         0,
+         this.isoPhysics.world.bounds.widthX
+      );
+      patron.body.y = Phaser.Math.Between(
+         0,
+         this.isoPhysics.world.bounds.widthY
+      );
+
+      this.pizza.holder.holdingPizza = false;
+
+      this.pizza.destroy();
+      create.pizza(this);
+      
+      this.pizzasDelivered++;
+      this.score.setText(`Pizzas Delivered: ${this.pizzasDelivered}`)
+      this.successSound.play({ volume: 2 });
    }
 
    loadingBar() {

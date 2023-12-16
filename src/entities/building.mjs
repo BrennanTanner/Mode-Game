@@ -9,7 +9,7 @@ class Building extends Phaser.GameObjects.Sprite {
       this.body.setOrigin(0.5, 0);
       //this.body.setSize(0, 0);
 
-      this.body.setSize(260, 200)
+      this.body.setSize(260, 220);
       scene.isoPhysics.world.enable(this.body);
       this.body.body.collideWorldBounds = true;
       this.body.body.immovable = true;
@@ -25,34 +25,35 @@ class Building extends Phaser.GameObjects.Sprite {
 
    update(scene) {
       this.isPlayerBehind(scene);
-
    }
 
    isPlayerBehind() {
+      //console.log(this.scene.player);
+      // console.log(this.scene.isoPhysics.distanceToCamera(this));
+      // const angle = this.scene.isoPhysics.anglesToXYZ(this, this.scene.player.body.isoX,
+      //    this.scene.player.body.isoY,
+      //    this.scene.player.body.isoZ-1000)
 
-      this.body.debugRender(this.scene.graphics);
-      this.scene.graphics.clear();
+      //    console.log(angle.theta/angle.phi)
+      //    this.scene.isoPhysics.anglesToXYZ(this, this.scene.isoPhysics,
+      //       this.scene.player.body.isoY,
+      //       this.scene.player.body.isoZ)
 
-      if (
-         this.alpha > 0.2 &&
-         this.scene.isoPhysics.distanceBetween(this, this.scene.player.body) <
-            200 &&
-         (this.scene.isoPhysics.anglesToXYZ(
-            this,
-            this.scene.player.body.isoX,
-            this.scene.player.body.isoY,
-            this.scene.player.body.isoZ
-         ).theta < 0 ||
-            this.scene.isoPhysics.anglesToXYZ(
-               this,
-               this.scene.player.body.isoX,
-               this.scene.player.body.isoY,
-               this.scene.player.body.isoZ
-            ).theta > 1.8)
-      ) {
-         this.setAlpha((this.alpha -= 0.05));
+      const distance = this.scene.isoPhysics.distanceToCamera(this)
+
+      if (distance > 550) {
+         this.body.enable = false;
+         this.setVisible(false);
       } else {
-         this.setAlpha((this.alpha += 0.05));
+         this.body.enable = true;
+         this.setVisible(true);
+         if (
+            distance < 160 && this.alpha> 0.2
+         ) {
+            this.setAlpha((this.alpha -= 0.05));
+         } else {
+             this.setAlpha((this.alpha += 0.05));
+         }
       }
    }
    // else{

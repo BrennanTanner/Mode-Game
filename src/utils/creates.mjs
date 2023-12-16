@@ -1,9 +1,27 @@
 import Player from '../entities/player.mjs';
 import Pizza from '../entities/pizza.mjs';
 import Gamer from '../entities/enemy.mjs';
+import Arrow from '../entities/arrow.mjs';
+import Patron from '../entities/patron.mjs';
 import Building from '../entities/building.mjs';
 
 const create = {};
+
+
+create.audio =(scene) =>{
+   // Music
+   scene.music = scene.sound.add('main-track', {
+      volume: 0.1,
+      loop: true,
+   } );
+
+     // hit sounds
+     scene.successSound = scene.sound.add('success-sound');
+
+   // hit sounds
+   scene.hitSound = scene.sound.add('hit-sound');
+
+}
 
 create.map = (scene) => {
    const map = scene.make.tilemap({ key: 'tilemap' });
@@ -109,7 +127,7 @@ create.buildings = (scene) => {
    }
    //level 2
    tx = -350;
-  ty = -40;
+   ty = -40;
    i = 0;
    for (let y = 0; y < 22; y++) {
       for (let x = 0; x < 16; x++) {
@@ -124,7 +142,7 @@ create.buildings = (scene) => {
    }
    //level 3
    tx = -350;
-  ty = -40;
+   ty = -40;
    i = 0;
    for (let y = 0; y < 22; y++) {
       for (let x = 0; x < 16; x++) {
@@ -137,40 +155,6 @@ create.buildings = (scene) => {
       tx = -350;
       ty += 140;
    }
-   //    for (let i = 0; i < 18; i++) {
-   //       new Building(scene, -420, 150*i+180, 0);
-
-   //    }
-   //    for (let i = 0; i < 3; i++) {
-   //       new Building(scene, 150*i-420, 30, 0);
-
-   //    }
-   //    for (let i = 0; i < 10; i++) {
-   //       new Building(scene, 150*i+280, 30, 0);
-
-   //    }
-   //    for (let i = 0; i < 19; i++) {
-   //       new Building(scene, 1670, 150*i+180, 0);
-
-   //    }
-   //    for (let i = 0; i < 3; i++) {
-   //       new Building(scene, 150*i-420, 4200, 0);
-
-   //    }
-   //    for (let i = 0; i < 10; i++) {
-   //       new Building(scene, 150*i+280, 4200, 0);
-
-   //    }
-   // //inside
-   // for (let i = 0; i < 18; i++) {
-   //    new Building(scene, -140, 150*i+180, 0);
-
-   // }
-
-   // new Building(scene, 280, 30, 0);
-   // new Building(scene, 430, 30, 0);
-
-   // new Building(scene, 430, 30, 160);
 };
 
 create.player = (scene) => {
@@ -178,6 +162,12 @@ create.player = (scene) => {
 };
 create.pizza = (scene) => {
    scene.pizza = new Pizza(scene);
+};
+create.arrow = (scene) => {
+   scene.arrow = new Arrow(scene);
+};
+create.patron = (scene, x, y, z) => {
+   scene.patron = new Patron(scene, x, y, z);
 };
 
 create.gamer = (scene, x, y) => {
@@ -188,78 +178,67 @@ create.building = (scene, x, y, z) => {
    new Building(scene, x, y, z);
 };
 
-
-create.menu = (scene, x, y, items, onClick)=>{
-   var exapndOrientation = "y";
-   var easeOrientation = "y";
- //console.log(position)
-   //var isoPointer = scene.isoPhysics.projector.unproject({x,y});
-   //var newPoint = scene.isoPhysics.projector.project(isoPointer)
-   // console.log(newPoint)
+create.menu = (scene, x, y, items, onClick) => {
+   // var exapndOrientation = 'y';
+   var easeOrientation = 'y';
    var menu = scene.rexUI.add.menu({
-     x: x,
-     y: y,
-     orientation: exapndOrientation,
-      subMenuSide: 'right',
- 
-     items: items,
-     createButtonCallback: function (item, i) {
-       return scene.rexUI.add.label({
-         background: scene.rexUI.add.roundRectangle(
-           0,
-           0,
-           2,
-           2,
-           0,
-           '#474c55'
-           
-         ),
-         text: scene.add.text(0, 0, item.name, {
-           fontSize: "20px"
-         }),
-         icon: scene.rexUI.add.roundRectangle(0, 0, 0, 0, 10, '#101313'),
-         space: {
-           left: 10,
-           right: 10,
-           top: 10,
-           bottom: 10,
-           icon: 10
-         }
-       });
-     },
- 
-     // easeIn: 500,
-     easeIn: {
-       duration: 500,
-       orientation: easeOrientation
-     },
- 
-     // easeOut: 100,
-     easeOut: {
-       duration: 100,
-       orientation: easeOrientation
-     }
- 
-     // expandEvent: 'button.over'
+      x: x,
+      y: y,
+      //orientation: exapndOrientation,
+      //subMenuSide: 'right',
+
+      items: items,
+      createButtonCallback: function (item, i) {
+         return scene.rexUI.add.label({
+            background: scene.rexUI.add.roundRectangle(0, 0, 2, 2, 0, 0x101313),
+            text: scene.add
+               .text(0, 0, item.name, {
+                  fontSize: '10px',
+               })
+               .setResolution(3),
+            icon: scene.rexUI.add.roundRectangle(0, 0, 0, 0, 2, 0x474c55),
+            space: {
+               left: 2,
+               right: 2,
+               top: 2,
+               bottom: 2,
+               icon: 2,
+            },
+         });
+      },
+
+      // easeIn: 500,
+      easeIn: {
+         duration: 300,
+         orientation: easeOrientation,
+      },
+
+      // easeOut: 100,
+      easeOut: {
+         duration: 100,
+         orientation: easeOrientation,
+      },
+
+      //expandEvent: 'button.over',
    });
- 
+
    menu
-     .on("button.over", function (button) {
-       button.getElement("background").setStrokeStyle(1, 0xffffff);
-     })
-     .on("button.out", function (button) {
-       button.getElement("background").setStrokeStyle();
-     })
-     .on("button.click", function (button) {
-       onClick(button);
-     })
-     .on("popup.complete", function (subMenu) {
-       console.log("popup.complete");
-     })
-     .on("scaledown.complete", function () {
-       console.log("scaledown.complete");
-     });
- 
+      .on('button.over', function (button) {
+         button.getElement('background').setFillStyle(0x474c55);
+      })
+      .on('button.out', function (button) {
+         button.getElement('background').setFillStyle(0x101313);
+      })
+      .on('button.click', function (button) {
+         onClick(button);
+      })
+      .on('popup.complete', function (subMenu) {
+         console.log('popup.complete');
+      })
+      .on('scaledown.complete', function () {
+         console.log('scaledown.complete');
+      });
+
    return menu;
 };
 
@@ -556,11 +535,18 @@ create.animations = (scene) => {
 
    //flip
    scene.anims.create({
-      key: 'gamer-flip',
+      key: 'gamer-flip-front',
       frames: scene.anims.generateFrameNumbers('gamer', {
          frames: [24, 25, 26, 27],
       }),
-      frameRate: 5,
+      frameRate: 3,
+   });
+   scene.anims.create({
+      key: 'gamer-flip-rear',
+      frames: scene.anims.generateFrameNumbers('gamer', {
+         frames: [24, 25, 26, 27],
+      }),
+      frameRate: 3,
    });
 
    //hit
@@ -594,7 +580,19 @@ create.animations = (scene) => {
       }),
    });
    scene.anims.create({
+      key: 'car-run-up',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [0],
+      }),
+   });
+   scene.anims.create({
       key: 'car-down',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [4],
+      }),
+   });
+   scene.anims.create({
+      key: 'car-run-down',
       frames: scene.anims.generateFrameNumbers('car', {
          frames: [4],
       }),
@@ -612,7 +610,37 @@ create.animations = (scene) => {
       }),
    });
    scene.anims.create({
+      key: 'car-walk-rear',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [3],
+      }),
+   });
+   scene.anims.create({
+      key: 'car-run-rear',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [3],
+      }),
+   });
+   scene.anims.create({
+      key: 'car-idle-rear',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [3],
+      }),
+   });
+   scene.anims.create({
       key: 'car-front',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [1],
+      }),
+   });
+   scene.anims.create({
+      key: 'car-walk-front',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [1],
+      }),
+   });
+   scene.anims.create({
+      key: 'car-run-front',
       frames: scene.anims.generateFrameNumbers('car', {
          frames: [1],
       }),
@@ -641,6 +669,79 @@ create.animations = (scene) => {
          frames: [8],
       }),
    });
+   scene.anims.create({
+      key: 'car-flip-front',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [8, 1, 7, 1],
+         frameRate: 2,
+      }),
+   });
+   scene.anims.create({
+      key: 'car-flip-rear',
+      frames: scene.anims.generateFrameNumbers('car', {
+         frames: [5, 3, 6, 3],
+         frameRate: 2,
+      }),
+   });
+
+   //Arrows
+   scene.anims.create({
+      key: 'arrow-rear',
+      frames: scene.anims.generateFrameNumbers('arrow', {
+         frames: [0]
+      }),
+   });
+   scene.anims.create({
+      key: 'arrow-down',
+      frames: scene.anims.generateFrameNumbers('arrow', {
+         frames: [1]
+      }),
+   });
+   scene.anims.create({
+      key: 'arrow-up',
+      frames: scene.anims.generateFrameNumbers('arrow', {
+         frames: [2]
+      }),
+   });
+   scene.anims.create({
+      key: 'arrow-front',
+      frames: scene.anims.generateFrameNumbers('arrow', {
+         frames: [3]
+      }),
+   });
+   scene.anims.create({
+      key: 'arrow-side',
+      frames: scene.anims.generateFrameNumbers('arrow', {
+         frames: [4]
+      }),
+   });
+
+      //patron
+      scene.anims.create({
+         key: 'patron-front',
+         frames: scene.anims.generateFrameNumbers('patron', {
+            frames: [0]
+         }),
+      });
+      scene.anims.create({
+         key: 'patron-down',
+         frames: scene.anims.generateFrameNumbers('patron', {
+            frames: [1]
+         }),
+      });
+      scene.anims.create({
+         key: 'patron-rear',
+         frames: scene.anims.generateFrameNumbers('patron', {
+            frames: [2]
+         }),
+      });
+      scene.anims.create({
+         key: 'patron-up',
+         frames: scene.anims.generateFrameNumbers('patron', {
+            frames: [3]
+         }),
+      });
+
 };
 
 export default create;

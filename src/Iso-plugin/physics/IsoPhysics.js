@@ -185,6 +185,17 @@ export default class IsoPhysics {
     return a.r;
   }
 
+  distanceToCamera(displayObjectBody, camera) {
+    camera = camera || this.scene.cameras.main;
+    var isoCamera = this.projector.unproject({x:camera.midPoint.x,y:camera.midPoint.y}, undefined, displayObjectBody.isoZ);
+    isoCamera.z = displayObjectBody.isoZ;
+    var a = this.anglesToXYZ(displayObjectBody, isoCamera.x-100, isoCamera.y-100, isoCamera.z-150);
+
+    return a.r;
+  }
+
+
+
   /**
    * Find the angles in radians between a display object (like a IsoSprite) and the given x/y/z coordinate.
    *

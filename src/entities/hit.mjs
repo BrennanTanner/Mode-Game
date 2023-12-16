@@ -1,20 +1,25 @@
 class Hit extends Phaser.GameObjects.Sprite {
-   constructor(scene, x, y, z, facing) {
-      super(scene, x, y, z);
+   constructor(scene, x, y, z, gamer) {
+      super(scene, x, y);
 
+const {facing, scale} = gamer;
 
       this.scene = scene;
       //modes
       this.speed = 1;
       this.invincible = false;
 this.hasHit = false;
-      this.body = scene.add.isoSprite(x, y, z);
+      this.body = scene.add.isoSprite(x, y, z, 'hit');
       this.body.setSize(50, 50, 50);
+      
       if(facing == "front"){
-         this.setSize(100, 100, 30).setOrigin(.5, 0).setPosition(this.body.x,this.body.y-60).setDepth(scene.player.body.depth+1);
+         this.setSize(100,100, 30).setOrigin(.5, 0).setPosition(this.body.x,this.body.y-60).setDepth(scene.player.body.depth+1);
          this.z = 2000;
+         this.setScale(scale);
       } else {
-         this.setSize(100, 100, 30).setOrigin(.5, 0).setPosition(this.body.x,this.body.y).setDepth(scene.player.body.depth-1).setRotation(3);
+         this.setSize(100,100, 30).setOrigin(.5, 0).setPosition(this.body.x,this.body.y).setDepth(scene.player.body.depth-1).setRotation(3);
+         this.z = 2000;
+         this.setScale(scale);
       }
 
       

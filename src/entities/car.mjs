@@ -16,8 +16,8 @@ class Car extends Phaser.GameObjects.Sprite {
       this.body.body.mass = 5;
       this.body.body.immovable = true;
       this.body.body.collideWorldBounds = true;
-      this.body.body.drag.x = 300;
-      this.body.body.drag.y = 300;
+      this.body.body.drag.x = 200;
+      this.body.body.drag.y = 200;
       this.body.body.bounce.set(0, 0, 0.1);
 
       this.body.name='car';
@@ -138,39 +138,39 @@ class Car extends Phaser.GameObjects.Sprite {
          this.body.body.velocity.x = 0;
          if (this.scene.cursors.left.isDown || this.scene.keys.AKey.isDown) {
             //left
-            this.body.body.velocity.y = 300;
-            this.body.body.velocity.x = -300;
+            this.body.body.velocity.y = 200;
+            this.body.body.velocity.x = -200;
    
             if (this.scene.cursors.up.isDown || this.scene.keys.WKey.isDown) {
                //left-up
-               this.body.body.velocity.x = -450;
+               this.body.body.velocity.x = -300;
                this.body.body.velocity.y = 0;
             } else if (this.scene.cursors.down.isDown || this.scene.keys.SKey.isDown) {
                //left-down
                this.body.body.velocity.x = 0;
-               this.body.body.velocity.y = 450;
+               this.body.body.velocity.y = 300;
             }
          } else if (this.scene.cursors.right.isDown || this.scene.keys.DKey.isDown) {
             //right
-            this.body.body.velocity.x = 300;
-            this.body.body.velocity.y = -300;
+            this.body.body.velocity.x = 200;
+            this.body.body.velocity.y = -200;
             if (this.scene.cursors.up.isDown || this.scene.keys.WKey.isDown) {
                //right-up
-               this.body.body.velocity.y = -450;
+               this.body.body.velocity.y = -300;
                this.body.body.velocity.x = 0;
             } else if (this.scene.cursors.down.isDown || this.scene.keys.SKey.isDown) {
                //right-down
-               this.body.body.velocity.x = 450;
+               this.body.body.velocity.x = 300;
                this.body.body.velocity.y = 0;
             }
          } else if (this.scene.cursors.up.isDown || this.scene.keys.WKey.isDown) {
             //up
-            this.body.body.velocity.x = -300;
-            this.body.body.velocity.y = -300;
+            this.body.body.velocity.x = -200;
+            this.body.body.velocity.y = -200;
          } else if (this.scene.cursors.down.isDown || this.scene.keys.SKey.isDown) {
             //down
-            this.body.body.velocity.x = 300;
-            this.body.body.velocity.y = 300;
+            this.body.body.velocity.x = 200;
+            this.body.body.velocity.y = 200;
          }
    
       }
