@@ -89,18 +89,22 @@ class TestScene extends Phaser.Scene {
          this.scorebg.depth = 5000;
          this.score.depth = 5001;
          this.tip = this.add
-         .text(230, 420, `press Q to use Mode gun`, {
+         .text(230, 420, `press Q to use the Mode gun`, {
             fontSize: '10px',
          })
          .setResolution(3).setScrollFactor(0);
-         this.tip.depth = 8000;
+         this.tip = this.add
+         .text(80, 60, `Press E to spawn a Pizza`, {
+            fontSize: '10px',
+         }).setResolution(3);
+         this.tip.depth = 10000;
          this.scorebg.depth = 5000;
          this.score.depth = 5001;
       this.platforms = this.add.group();
 
       this.gamers = this.add.group({
          classType: Gamer,
-         maxSize: 20,
+         maxSize: 30,
          runChildUpdate: true,
       });
       this.hits = this.add.group({
@@ -118,7 +122,10 @@ class TestScene extends Phaser.Scene {
       //this.cars.create(256, 256, 100);
 
       for (let i = 0; i < 100; i++) {
-         this.gamers.create(200, 50 * i);
+         this.gamers.create(Phaser.Math.Between(
+            1,
+            this.isoPhysics.world.bounds.widthY
+         )-1, 75 * i);
       }
 
       this.cursors = this.input.keyboard.createCursorKeys();
@@ -216,7 +223,9 @@ class TestScene extends Phaser.Scene {
          this.pizza.holder = false;
       }
 
-      
+      if(this.player.body.holdingPizza){
+      this.player.body.holdingPizza = false;
+      }
       hit.hasHit = true;
       this.hitSound.play({ volume: 3});
    }

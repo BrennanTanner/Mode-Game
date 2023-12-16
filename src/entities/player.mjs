@@ -424,38 +424,41 @@ class Player extends Phaser.GameObjects.Sprite {
    }
    driveControls() {
       if (Phaser.Input.Keyboard.JustDown(this.scene.keys.EKey) ) {
-         const closestCar = this.scene.isoPhysics.closestBody(
-            this.body,
-            this.scene.cars.children.entries
-         );
-         if (this.drive) {
-            this.body.isoX = this.body.isoX + 100;
-            this.body.isoY = this.body.isoY + 100;
+         console.log(this.body.isoY)
+         if(this.body.isoX < -100 && this.body.isoY < 100){this.scene.pizza.body.destroy();
+            create.pizza(this.scene);}
+         // const closestCar = this.scene.isoPhysics.closestBody(
+         //    this.body,
+         //    this.scene.cars.children.entries
+         // );
+         // if (this.drive) {
+         //    this.body.isoX = this.body.isoX + 100;
+         //    this.body.isoY = this.body.isoY + 100;
 
-            closestCar.body.enable = true;
-            this.body.setVisible(true);
-            this.shadow.setVisible(true);
-            this.drive = false;
-            closestCar.drive = false;
-            this.car = null;
-            if (this.scene.pizza.holder.name == 'car') {
-               this.scene.pizza.holder = this.body;
-            }
-         }
-         if (
-            this.scene.isoPhysics.distanceBetween(this.body, closestCar.body) <=
-            60
-         ) {
-            closestCar.body.enable = false;
-            this.body.setVisible(false);
-            this.shadow.setVisible(false);
-            this.drive = true;
-            closestCar.drive = true;
-            this.car = closestCar;
-            if (this.scene.pizza.holder.name == 'player') {
-               this.scene.pizza.holder = this.car.body;
-            }
-         }
+         //    closestCar.body.enable = true;
+         //    this.body.setVisible(true);
+         //    this.shadow.setVisible(true);
+         //    this.drive = false;
+         //    closestCar.drive = false;
+         //    this.car = null;
+         //    if (this.scene.pizza.holder.name == 'car') {
+         //       this.scene.pizza.holder = this.body;
+         //    }
+         // }
+         // if (
+         //    this.scene.isoPhysics.distanceBetween(this.body, closestCar.body) <=
+         //    60
+         // ) {
+         //    closestCar.body.enable = false;
+         //    this.body.setVisible(false);
+         //    this.shadow.setVisible(false);
+         //    this.drive = true;
+         //    closestCar.drive = true;
+         //    this.car = closestCar;
+         //    if (this.scene.pizza.holder.name == 'player') {
+         //       this.scene.pizza.holder = this.car.body;
+         //    }
+         // }
       }
    }
 }

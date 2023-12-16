@@ -32,9 +32,10 @@ class Pizza extends Phaser.GameObjects.Sprite {
       if (this.scene.isoPhysics.distanceBetween(
          this.body,
          this.scene.player.body
-      ) > 2000) {
+      ) > 800) {
          this.body.destroy();
          create.pizza(this.scene);
+         return;
       }
       //console.log(this.body.body)
       if(this.body.body.blocked.up || this.body.body.touching.up){

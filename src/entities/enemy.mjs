@@ -109,7 +109,7 @@ class Gamer extends Phaser.GameObjects.Sprite {
 
                            case 'Car Mode: Off':
                               this.sprite = 'car';
-                                 
+
                               this.menu.children[2].children[2].setText(
                                  'Car Mode: On'
                               );
@@ -219,7 +219,19 @@ class Gamer extends Phaser.GameObjects.Sprite {
                }
             } else if (this.body.body.blocked.up) {
                this.destroy();
+               this.create.gamer(
+                  this.scene,
+                  Phaser.Math.Between(0, this.isoPhysics.world.bounds.widthX),
+                  Phaser.Math.Between(0, this.isoPhysics.world.bounds.widthY)
+               );
                return;
+            } else if(this.body.body.blocked.up || this.body.body.touching.up){
+               this.destroy();
+               this.create.gamer(
+                  this.scene,
+                  Phaser.Math.Between(0, this.isoPhysics.world.bounds.widthX),
+                  Phaser.Math.Between(0, this.isoPhysics.world.bounds.widthY)
+               );
             }
             this.animations();
          }
@@ -365,20 +377,20 @@ class Gamer extends Phaser.GameObjects.Sprite {
             this.moveMethod = 'walk';
             this.speed = this.speed * 0.5;
          } else {
-            if(this.body.holdingPizza){
+            if (this.body.holdingPizza) {
                this.scene.isoPhysics.moveToObjectXY(
                   this.body,
                   this.scene.player.body,
                   -this.speed * 50
                );
-            }else{
-            this.scene.isoPhysics.moveToObjectXY(
-               this.body,
-               this.scene.pizza.holder
-                  ? this.scene.pizza.holder
-                  : this.scene.pizza.body,
-               this.speed * 50
-            );
+            } else {
+               this.scene.isoPhysics.moveToObjectXY(
+                  this.body,
+                  this.scene.pizza.holder
+                     ? this.scene.pizza.holder
+                     : this.scene.pizza.body,
+                  this.speed * 50
+               );
             }
             // if (this.body.isoZ < 1) {
             //    this.body.body.velocity.z = 0;
@@ -388,7 +400,6 @@ class Gamer extends Phaser.GameObjects.Sprite {
          }
    }
    hitPlayer() {
-      console.log(this);
       this.cooldown = true;
       this.scene.hits.create(this.body.isoX, this.body.isoY, this.body.isoZ, {
          facing: this.facing,

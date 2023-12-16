@@ -3,7 +3,6 @@ class Car extends Phaser.GameObjects.Sprite {
       super(scene, x, y, z);
       this.scene = scene;
 
-
       //modes
       this.speed = 1;
       this.invincible = false;
