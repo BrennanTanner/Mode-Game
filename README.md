@@ -1,6 +1,6 @@
 ## Big Mo's Delivery
 
-This is a javascript videogame that I built for a game jam. It was built in 3 weeks using Phaser 3 and a plugin for creating an isometric view.
+This is a javascript video game that I built for a game jam. It was built in 3 weeks using Phaser 3 and a plugin for creating an isometric view.
 
 ### Overview
 Play it on itch.io [here](https://ggmg.itch.io/big-mos-delivery) 
